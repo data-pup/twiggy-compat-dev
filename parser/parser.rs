@@ -26,6 +26,9 @@ pub fn read_and_parse<P: AsRef<path::Path>>(path: P) -> Result<ir::Items, traits
         Some("wasm") => if let Ok(items) = parse_wasm(&data) {
             return Ok(items);
         },
+        Some("o") => if let Ok(items) = parse_elf(&data) {
+            return Ok(items);
+        }
         _ => {}
     }
 
@@ -75,6 +78,10 @@ fn parse_wasm(data: &[u8]) -> Result<ir::Items, traits::Error> {
     module.parse_edges(&mut items, ())?;
 
     Ok(items.finish())
+}
+
+fn parse_elf(data: &[u8]) -> Result<ir::Items, traits::Error> {
+    unimplemented!();
 }
 
 fn parse_fallback(data: &[u8]) -> Result<ir::Items, traits::Error> {
