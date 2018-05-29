@@ -3,6 +3,7 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 
+extern crate fallible_iterator;
 extern crate gimli;
 extern crate object;
 extern crate parity_wasm;

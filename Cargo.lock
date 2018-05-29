@@ -545,6 +545,7 @@ dependencies = [
 name = "twiggy-parser"
 version = "0.1.0"
 dependencies = [
+ "fallible-iterator 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "gimli 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "object 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "parity-wasm 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",

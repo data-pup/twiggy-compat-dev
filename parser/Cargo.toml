@@ -12,6 +12,7 @@ version = "0.1.0"
 path = "./parser.rs"
 
 [dependencies]
+fallible-iterator = "0.1.4"
 gimli = "0.15.0"
 object = "0.8.0"
 parity-wasm = "0.28.0"
