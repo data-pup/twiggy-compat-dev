@@ -83,6 +83,8 @@ fn parse_wasm(data: &[u8]) -> Result<ir::Items, traits::Error> {
 }
 
 fn parse_elf(data: &[u8]) -> Result<ir::Items, traits::Error> {
+    // let mut items = ir::ItemsBuilder::new(data.len() as u32);
+    // let file: object::File = object::File::parse(data)?;
     unimplemented!();
 }
 
