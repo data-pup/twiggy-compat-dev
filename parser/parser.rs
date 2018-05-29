@@ -4,6 +4,7 @@
 #![deny(missing_debug_implementations)]
 
 extern crate gimli;
+extern crate object;
 extern crate parity_wasm;
 extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
