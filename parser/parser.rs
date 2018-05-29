@@ -10,9 +10,11 @@ extern crate parity_wasm;
 extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
 
+mod elf;
 mod wasm;
 
 use fallible_iterator::FallibleIterator;
+use object::Object;
 use parity_wasm::elements;
 use std::fs;
 use std::io::Read;
@@ -84,9 +86,19 @@ fn parse_wasm(data: &[u8]) -> Result<ir::Items, traits::Error> {
 }
 
 fn parse_elf(data: &[u8]) -> Result<ir::Items, traits::Error> {
-    // let mut items = ir::ItemsBuilder::new(data.len() as u32);
-    // let file: object::File = object::File::parse(data)?;
-    unimplemented!();
+    let mut items = ir::ItemsBuilder::new(data.len() as u32);
+    let file: object::File = object::File::parse(data)?;
+
+    let _endian = if file.is_little_endian() {
+        gimli::RunTimeEndian::Little
+    } else {
+        gimli::RunTimeEndian::Big
+    };
+
+    file.parse_items(&mut items, ())?;
+    file.parse_edges(&mut items, ())?;
+
+    Ok(items.finish())
 }
 
 fn parse_fallback(data: &[u8]) -> Result<ir::Items, traits::Error> {
