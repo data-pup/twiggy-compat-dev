@@ -59,6 +59,12 @@ enum ErrorInner {
     Regex(#[cause] regex::Error),
 }
 
+impl<'a> From<&'a str> for Error {
+    fn from(msg: &'a str) -> Error {
+        Error::with_msg(msg)
+    }
+}
+
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
         Error {
