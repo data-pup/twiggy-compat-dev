@@ -13,7 +13,6 @@ extern crate twiggy_traits as traits;
 mod other;
 mod wasm;
 
-use fallible_iterator::FallibleIterator;
 use parity_wasm::elements;
 use std::fs;
 use std::io::Read;
