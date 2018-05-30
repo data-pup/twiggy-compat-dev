@@ -15,47 +15,44 @@ impl<'a> Parse<'a> for object::File<'a> {
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
+        // Identify the endianty of the file.
         let endian = if self.is_little_endian() {
             gimli::RunTimeEndian::Little
         } else {
             gimli::RunTimeEndian::Big
         };
 
+        // Get the contents of the .debug_info section in the file.
         let debug_info_sect_data = self
             .section_data_by_name(".debug_info")
             .expect("Could not find .debug_info section");
         let debug_info = gimli::DebugInfo::new(&debug_info_sect_data, endian);
 
+        // Get the contents of the .debug_abbrev section in the file.
         let debug_abbrev_data = self
             .section_data_by_name(".debug_abbrev")
             .expect("Could not find .debug_abbrev section");
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
-        // let mut iter = _debug_info.units();
-        // while let Some(unit) = iter
-        //     .next()
-        //     .expect("Could not find next unit in .debug_info")
-        // {
-        //     // let debug_abbrev = gimli::DebugAbbrev::new(&unit, endian);
-        //     // let abbrevs_ = unit.abbreviations(&debug_abbrev).unwrap();
-        //     unimplemented!();
-        // }
-
+        // Collect the units in .debug_info into a Vec of compilation unit headers.
         let compilation_units = debug_info
             .units()
             .collect::<Vec<_>>()
             .expect("Could not collect .debug_info units");
 
+        // Iterate through the entries inside of each unit.
         for unit in compilation_units.iter() {
             let abbrevs = unit
                 .abbreviations(&debug_abbrev)
                 .expect("Could not find abbreviations");
             let mut entries_cursor = unit.entries(&abbrevs);
 
+            // Traverse the entries in the unit in depth-first order.
             while let Some((delta_depth, current)) = entries_cursor
                 .next_dfs()
                 .expect("Could not parse next entry")
             {
+                // Todo...
                 unimplemented!();
             }
 
