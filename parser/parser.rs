@@ -28,16 +28,9 @@ pub fn read_and_parse<P: AsRef<path::Path>>(path: P) -> Result<ir::Items, traits
     file.read_to_end(&mut data)?;
 
     match path.extension().and_then(|s| s.to_str()) {
-        Some("wasm") => if let Ok(items) = parse_wasm(&data) {
-            return Ok(items);
-        },
-        Some("o") => if let Ok(items) = parse_elf(&data) {
-            return Ok(items);
-        }
-        _ => {}
+        Some("wasm") => parse_wasm(&data),
+        _ => parse_other(&data),
     }
-
-    parse_fallback(&data)
 }
 
 /// Parse the given data into IR items.
@@ -85,7 +78,7 @@ fn parse_wasm(data: &[u8]) -> Result<ir::Items, traits::Error> {
     Ok(items.finish())
 }
 
-fn parse_elf(data: &[u8]) -> Result<ir::Items, traits::Error> {
+fn parse_other(data: &[u8]) -> Result<ir::Items, traits::Error> {
     let mut items = ir::ItemsBuilder::new(data.len() as u32);
     let file: object::File = object::File::parse(data)?;
 
