@@ -1,7 +1,8 @@
 use super::Parse;
-use ir::{self, Id};
 use gimli;
+use ir::{self, Id};
 use object;
+use object::Object;
 use std::fmt::Write;
 use traits;
 
@@ -14,6 +15,17 @@ impl<'a> Parse<'a> for object::File<'a> {
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
+        let endian = if self.is_little_endian() {
+            gimli::RunTimeEndian::Little
+        } else {
+            gimli::RunTimeEndian::Big
+        };
+
+        let debug_sect_data = self
+            .section_data_by_name(".debug_info")
+            .expect("Could not find .debug_info section");
+        let _debug_info = gimli::DebugInfo::new(&debug_sect_data, endian);
+
         unimplemented!();
     }
 
