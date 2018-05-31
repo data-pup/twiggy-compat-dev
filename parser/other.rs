@@ -1,8 +1,7 @@
 use super::Parse;
 use fallible_iterator::FallibleIterator;
 use gimli;
-// use ir::{self, Id};
-use ir;
+use ir::{self, Id};
 use object::{self, Object};
 use traits;
 
@@ -45,16 +44,16 @@ impl<'a> Parse<'a> for object::File<'a> {
             .expect("Could not collect .debug_info units");
 
         // Iterate through the entries inside of each unit.
-        for (_unit_id, unit) in compilation_units.iter().enumerate() {
+        for (unit_id, unit) in compilation_units.iter().enumerate() {
             let abbrevs = unit
                 .abbreviations(&debug_abbrev)
                 .expect("Could not find abbreviations");
 
-            let mut _curr_entry_id = 0;
+            let mut curr_entry_id = 0;
             let mut entries_cursor = unit.entries(&abbrevs);
 
             // Traverse the entries in the unit in depth-first order.
-            while let Some((delta_depth, _current)) = entries_cursor
+            while let Some((delta_depth, current)) = entries_cursor
                 .next_dfs()
                 .expect("Could not parse next entry")
             {
@@ -62,12 +61,19 @@ impl<'a> Parse<'a> for object::File<'a> {
                 if delta_depth >= 0 {
                     break;
                 }
+
                 // TODO:
                 // *  Create an Id value for the given entry.
                 // *  Add the item to the ItemsBuilder.
 
-                _curr_entry_id += 1;
+                let _id = Id::entry(unit_id, curr_entry_id);
+                let _size = current.attr_value(gimli::DW_AT_byte_size);
+                let _name = current.attr_value(gimli::DW_AT_name);
+                // let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
                 unimplemented!();
+                // items.add_item(new_ir_item);
+
+                curr_entry_id += 1;
             }
 
             unimplemented!();
