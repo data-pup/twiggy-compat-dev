@@ -68,11 +68,15 @@ impl<'a> Parse<'a> for object::File<'a> {
 
                 let name: String = current
                     .attr(gimli::DW_AT_name)?
-                    .expect("Could not find DW_AT_name attribute for entry")
+                    .ok_or(traits::Error::with_msg(
+                        "Could not find DW_AT_name attribute for entry",
+                    ))?
                     .string_value(&debug_str)
-                    .expect("Could not find entity name in string table")
+                    .ok_or(traits::Error::with_msg(
+                        "Could not find entity name in string table",
+                    ))?
                     .to_string()?
-                    .to_owned(); // FIXUP: This seems less than ideal.
+                    .to_owned(); // FIXUP: `to_string` -> `to_owned` seems less than ideal?
 
                 let size = current
                     .attr(gimli::DW_AT_byte_size)?
