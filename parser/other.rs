@@ -81,8 +81,9 @@ impl<'a> Parse<'a> for object::File<'a> {
                 let size = current
                     .attr(gimli::DW_AT_byte_size)?
                     .and_then(|attr| attr.udata_value())
-                    .expect("Could not find DW_AT_byte_size attribute for entry")
-                    as u32; // FIXUP: Should we change the size in ir::Item to u64?
+                    .ok_or(traits::Error::with_msg(
+                        "Could not find DW_AT_byte_size attribute for entry",
+                    ))? as u32; // FIXUP: Should we change the size in ir::Item to u64?
 
                 let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
                 items.add_item(new_ir_item);
