@@ -393,8 +393,4 @@ test!(
     "json"
 );
 
-test!(
-    elf_top_hello_world_rs,
-    "top",
-    "./fixtures/hello_elf.o"
-);
+test!(elf_top_hello_world_rs, "top", "./fixtures/hello_elf.o");
