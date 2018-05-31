@@ -6,6 +6,10 @@ use ir;
 use object::{self, Object};
 use traits;
 
+fn serialized_size<T>(t: T) -> u32 {
+    unimplemented!();
+}
+
 impl<'a> Parse<'a> for object::File<'a> {
     type ItemsExtra = ();
 
