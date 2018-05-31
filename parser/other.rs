@@ -5,17 +5,13 @@ use ir::{self, Id};
 use object::{self, Object};
 use traits;
 
-fn serialized_size<T>(t: T) -> u32 {
-    unimplemented!();
-}
-
 impl<'a> Parse<'a> for object::File<'a> {
     type ItemsExtra = ();
 
     /// Parse `Self` into one or more `ir::Item`s and add them to the builder.
     fn parse_items(
         &self,
-        _items: &mut ir::ItemsBuilder,
+        items: &mut ir::ItemsBuilder,
         _extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
         // Identify the endianty of the file.
@@ -68,31 +64,30 @@ impl<'a> Parse<'a> for object::File<'a> {
                     break;
                 }
 
-                // TODO:
-                // *  Add the item to the ItemsBuilder.
-                // *  Convert the DWARF attributes for size/name into
-                //    u32/String respectively.
+                let id = Id::entry(unit_id, curr_entry_id);
 
-                let _id = Id::entry(unit_id, curr_entry_id);
-                let name = current
+                let name: String = current
                     .attr(gimli::DW_AT_name)?
-                    .and_then(|attr| attr.string_value(&debug_str));
+                    .expect("Could not find DW_AT_name attribute for entry")
+                    .string_value(&debug_str)
+                    .expect("Could not find entity name in string table")
+                    .to_string()?
+                    .to_owned(); // FIXUP: This seems less than ideal.
+
                 let size = current
                     .attr(gimli::DW_AT_byte_size)?
-                    .and_then(|attr| attr.udata_value());
+                    .and_then(|attr| attr.udata_value())
+                    .expect("Could not find DW_AT_byte_size attribute for entry")
+                    as u32; // FIXUP: Should we change the size in ir::Item to u64?
 
-                // let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
-
-                unimplemented!();
-                // items.add_item(new_ir_item);
+                let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
+                items.add_item(new_ir_item);
 
                 curr_entry_id += 1;
             }
-
-            unimplemented!();
         }
 
-        unimplemented!();
+        Ok(())
     }
 
     /// Any extra data needed to parse this type's edges.
