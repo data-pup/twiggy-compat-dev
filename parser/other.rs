@@ -37,6 +37,12 @@ impl<'a> Parse<'a> for object::File<'a> {
             .expect("Could not find .debug_abbrev section");
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
+        // Get the contents of the string table (.debug_str) section in the file.
+        let debug_string_data = self
+            .section_data_by_name(".debug_str")
+            .expect("Could not find .debug_str section");
+        let debug_str = gimli::DebugStr::new(&debug_string_data, endian);
+
         // Collect the units in .debug_info into a Vec of compilation unit headers.
         let compilation_units = debug_info
             .units()
@@ -68,12 +74,12 @@ impl<'a> Parse<'a> for object::File<'a> {
                 //    u32/String respectively.
 
                 let _id = Id::entry(unit_id, curr_entry_id);
-                let _size = current
-                    .attr_value(gimli::DW_AT_byte_size)?
-                    .expect("Could not find size attribute of entry");
-                let _name = current
-                    .attr_value(gimli::DW_AT_name)?
-                    .expect("Could not find name attribute of entry");
+                let name = current
+                    .attr(gimli::DW_AT_name)?
+                    .and_then(|attr| attr.string_value(&debug_str));
+                let size = current
+                    .attr(gimli::DW_AT_byte_size)?
+                    .and_then(|attr| attr.udata_value());
 
                 // let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
 
