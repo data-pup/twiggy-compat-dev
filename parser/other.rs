@@ -67,9 +67,15 @@ impl<'a> Parse<'a> for object::File<'a> {
                 // *  Add the item to the ItemsBuilder.
 
                 let _id = Id::entry(unit_id, curr_entry_id);
-                let _size = current.attr_value(gimli::DW_AT_byte_size);
-                let _name = current.attr_value(gimli::DW_AT_name);
+                let _size = current
+                    .attr_value(gimli::DW_AT_byte_size)?
+                    .expect("Could not find size attribute of entry");
+                let _name = current
+                    .attr_value(gimli::DW_AT_name)?
+                    .expect("Could not find name attribute of entry");
+
                 // let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
+
                 unimplemented!();
                 // items.add_item(new_ir_item);
 
