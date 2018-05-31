@@ -1,9 +1,9 @@
 use super::Parse;
 use fallible_iterator::FallibleIterator;
 use gimli;
-use ir::{self, Id};
-use object;
-use object::Object;
+// use ir::{self, Id};
+use ir;
+use object::{self, Object};
 use traits;
 
 impl<'a> Parse<'a> for object::File<'a> {
@@ -12,8 +12,8 @@ impl<'a> Parse<'a> for object::File<'a> {
     /// Parse `Self` into one or more `ir::Item`s and add them to the builder.
     fn parse_items(
         &self,
-        items: &mut ir::ItemsBuilder,
-        extra: Self::ItemsExtra,
+        _items: &mut ir::ItemsBuilder,
+        _extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
         // Identify the endianty of the file.
         let endian = if self.is_little_endian() {
@@ -41,18 +41,21 @@ impl<'a> Parse<'a> for object::File<'a> {
             .expect("Could not collect .debug_info units");
 
         // Iterate through the entries inside of each unit.
-        for unit in compilation_units.iter() {
+        for (_unit_id, unit) in compilation_units.iter().enumerate() {
             let abbrevs = unit
                 .abbreviations(&debug_abbrev)
                 .expect("Could not find abbreviations");
+
             let mut entries_cursor = unit.entries(&abbrevs);
 
             // Traverse the entries in the unit in depth-first order.
-            while let Some((delta_depth, current)) = entries_cursor
+            while let Some((_delta_depth, _current)) = entries_cursor
                 .next_dfs()
                 .expect("Could not parse next entry")
             {
-                // Todo...
+                // TODO:
+                // *  Create an Id value for the given entry.
+                // *  Add the item to the ItemsBuilder.
                 unimplemented!();
             }
 
@@ -69,8 +72,8 @@ impl<'a> Parse<'a> for object::File<'a> {
     /// parsed items.
     fn parse_edges(
         &self,
-        items: &mut ir::ItemsBuilder,
-        extra: Self::EdgesExtra,
+        _items: &mut ir::ItemsBuilder,
+        _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
         unimplemented!();
     }
