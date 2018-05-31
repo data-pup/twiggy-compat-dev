@@ -46,16 +46,23 @@ impl<'a> Parse<'a> for object::File<'a> {
                 .abbreviations(&debug_abbrev)
                 .expect("Could not find abbreviations");
 
+            let mut _curr_entry_id = 0;
             let mut entries_cursor = unit.entries(&abbrevs);
 
             // Traverse the entries in the unit in depth-first order.
-            while let Some((_delta_depth, _current)) = entries_cursor
+            while let Some((delta_depth, _current)) = entries_cursor
                 .next_dfs()
                 .expect("Could not parse next entry")
             {
+                // Bail out of the loop when we return to the starting position.
+                if delta_depth >= 0 {
+                    break;
+                }
                 // TODO:
                 // *  Create an Id value for the given entry.
                 // *  Add the item to the ItemsBuilder.
+
+                _curr_entry_id += 1;
                 unimplemented!();
             }
 
