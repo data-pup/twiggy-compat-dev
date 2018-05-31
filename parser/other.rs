@@ -63,8 +63,9 @@ impl<'a> Parse<'a> for object::File<'a> {
                 }
 
                 // TODO:
-                // *  Create an Id value for the given entry.
                 // *  Add the item to the ItemsBuilder.
+                // *  Convert the DWARF attributes for size/name into
+                //    u32/String respectively.
 
                 let _id = Id::entry(unit_id, curr_entry_id);
                 let _size = current
