@@ -125,7 +125,7 @@ where
             _ => unimplemented!(),
         };
 
-        let _temp = self
+        let name: String = self
             .attr(gimli::DW_AT_name)?
             .ok_or(traits::Error::with_msg(
                 "Could not find DW_AT_name attribute for debugging information entry",
@@ -133,10 +133,9 @@ where
             .string_value(&debug_str)
             .ok_or(traits::Error::with_msg(
                 "Could not find entity name in string table",
-            ))?;
-
-        // .to_string()? // FIXUP: This causes an error?
-        // .to_owned();
+            ))?
+            .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
+            .to_string();
 
         // let size = current
         //     .attr(gimli::DW_AT_byte_size)?
