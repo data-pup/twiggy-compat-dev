@@ -5,6 +5,129 @@ use ir;
 use object::{self, Object};
 use traits;
 
+/// Find the `ItemKind` type for an entry with the given tag.
+/// FIXUP: Must this match be exhaustive? Is this even a good approach?
+fn ir_item_kind(tag: gimli::DwTag) -> Result<ir::ItemKind, traits::Error> {
+    match tag {
+        gimli::DW_TAG_ALTIUM_circ_type => unimplemented!(),
+        gimli::DW_TAG_ALTIUM_mwa_circ_type => unimplemented!(),
+        gimli::DW_TAG_ALTIUM_rev_carry_type => unimplemented!(),
+        gimli::DW_TAG_ALTIUM_rom => unimplemented!(),
+        gimli::DW_TAG_APPLE_property => unimplemented!(),
+        gimli::DW_TAG_BORLAND_Delphi_dynamic_array => unimplemented!(),
+        gimli::DW_TAG_BORLAND_Delphi_set => unimplemented!(),
+        gimli::DW_TAG_BORLAND_Delphi_string => unimplemented!(),
+        gimli::DW_TAG_BORLAND_Delphi_variant => unimplemented!(),
+        gimli::DW_TAG_BORLAND_property => unimplemented!(),
+        gimli::DW_TAG_GNU_BINCL => unimplemented!(),
+        gimli::DW_TAG_GNU_EINCL => unimplemented!(),
+        gimli::DW_TAG_GNU_call_site => unimplemented!(),
+        gimli::DW_TAG_GNU_call_site_parameter => unimplemented!(),
+        gimli::DW_TAG_GNU_formal_parameter_pack => unimplemented!(),
+        gimli::DW_TAG_GNU_template_parameter_pack => unimplemented!(),
+        gimli::DW_TAG_GNU_template_template_param => unimplemented!(),
+        gimli::DW_TAG_HP_Bliss_field => unimplemented!(),
+        gimli::DW_TAG_HP_Bliss_field_set => unimplemented!(),
+        gimli::DW_TAG_HP_array_descriptor => unimplemented!(),
+        gimli::DW_TAG_MIPS_loop => unimplemented!(),
+        gimli::DW_TAG_PGI_interface_block => unimplemented!(),
+        gimli::DW_TAG_PGI_kanji_type => unimplemented!(),
+        gimli::DW_TAG_SUN_class_template => unimplemented!(),
+        gimli::DW_TAG_SUN_codeflags => unimplemented!(),
+        gimli::DW_TAG_SUN_dtor => unimplemented!(),
+        gimli::DW_TAG_SUN_dtor_info => unimplemented!(),
+        gimli::DW_TAG_SUN_f90_interface => unimplemented!(),
+        gimli::DW_TAG_SUN_fortran_vax_structure => unimplemented!(),
+        gimli::DW_TAG_SUN_function_template => unimplemented!(),
+        gimli::DW_TAG_SUN_indirect_inheritance => unimplemented!(),
+        gimli::DW_TAG_SUN_memop_info => unimplemented!(),
+        gimli::DW_TAG_SUN_omp_child_func => unimplemented!(),
+        gimli::DW_TAG_SUN_rtti_descriptor => unimplemented!(),
+        gimli::DW_TAG_SUN_struct_template => unimplemented!(),
+        gimli::DW_TAG_SUN_union_template => unimplemented!(),
+        gimli::DW_TAG_access_declaration => unimplemented!(),
+        gimli::DW_TAG_array_type => unimplemented!(),
+        gimli::DW_TAG_atomic_type => unimplemented!(),
+        gimli::DW_TAG_base_type => unimplemented!(),
+        gimli::DW_TAG_call_site => unimplemented!(),
+        gimli::DW_TAG_call_site_parameter => unimplemented!(),
+        gimli::DW_TAG_catch_block => unimplemented!(),
+        gimli::DW_TAG_class_template => unimplemented!(),
+        gimli::DW_TAG_class_type => unimplemented!(),
+        gimli::DW_TAG_coarray_type => unimplemented!(),
+        gimli::DW_TAG_common_block => unimplemented!(),
+        gimli::DW_TAG_common_inclusion => unimplemented!(),
+        gimli::DW_TAG_compile_unit => unimplemented!(),
+        gimli::DW_TAG_condition => unimplemented!(),
+        gimli::DW_TAG_const_type => unimplemented!(),
+        gimli::DW_TAG_constant => unimplemented!(),
+        gimli::DW_TAG_dwarf_procedure => unimplemented!(),
+        gimli::DW_TAG_dynamic_type => unimplemented!(),
+        gimli::DW_TAG_entry_point => unimplemented!(),
+        gimli::DW_TAG_enumeration_type => unimplemented!(),
+        gimli::DW_TAG_enumerator => unimplemented!(),
+        gimli::DW_TAG_file_type => unimplemented!(),
+        gimli::DW_TAG_formal_parameter => unimplemented!(),
+        gimli::DW_TAG_format_label => unimplemented!(),
+        gimli::DW_TAG_friend => unimplemented!(),
+        gimli::DW_TAG_function_template => unimplemented!(),
+        gimli::DW_TAG_generic_subrange => unimplemented!(),
+        gimli::DW_TAG_hi_user => unimplemented!(),
+        gimli::DW_TAG_immutable_type => unimplemented!(),
+        gimli::DW_TAG_imported_declaration => unimplemented!(),
+        gimli::DW_TAG_imported_module => unimplemented!(),
+        gimli::DW_TAG_imported_unit => unimplemented!(),
+        gimli::DW_TAG_inheritance => unimplemented!(),
+        gimli::DW_TAG_inlined_subroutine => unimplemented!(),
+        gimli::DW_TAG_interface_type => unimplemented!(),
+        gimli::DW_TAG_label => unimplemented!(),
+        gimli::DW_TAG_lexical_block => unimplemented!(),
+        gimli::DW_TAG_lo_user => unimplemented!(),
+        gimli::DW_TAG_member => unimplemented!(),
+        gimli::DW_TAG_module => unimplemented!(),
+        gimli::DW_TAG_namelist => unimplemented!(),
+        gimli::DW_TAG_namelist_item => unimplemented!(),
+        gimli::DW_TAG_namespace => unimplemented!(),
+        gimli::DW_TAG_null => unimplemented!(),
+        gimli::DW_TAG_packed_type => unimplemented!(),
+        gimli::DW_TAG_partial_unit => unimplemented!(),
+        gimli::DW_TAG_pointer_type => unimplemented!(),
+        gimli::DW_TAG_ptr_to_member_type => unimplemented!(),
+        gimli::DW_TAG_reference_type => unimplemented!(),
+        gimli::DW_TAG_restrict_type => unimplemented!(),
+        gimli::DW_TAG_rvalue_reference_type => unimplemented!(),
+        gimli::DW_TAG_set_type => unimplemented!(),
+        gimli::DW_TAG_shared_type => unimplemented!(),
+        gimli::DW_TAG_skeleton_unit => unimplemented!(),
+        gimli::DW_TAG_string_type => unimplemented!(),
+        gimli::DW_TAG_structure_type => unimplemented!(),
+        gimli::DW_TAG_subprogram => unimplemented!(),
+        gimli::DW_TAG_subrange_type => unimplemented!(),
+        gimli::DW_TAG_subroutine_type => unimplemented!(),
+        gimli::DW_TAG_template_alias => unimplemented!(),
+        gimli::DW_TAG_template_type_parameter => unimplemented!(),
+        gimli::DW_TAG_template_value_parameter => unimplemented!(),
+        gimli::DW_TAG_thrown_type => unimplemented!(),
+        gimli::DW_TAG_try_block => unimplemented!(),
+        gimli::DW_TAG_type_unit => unimplemented!(),
+        gimli::DW_TAG_typedef => unimplemented!(),
+        gimli::DW_TAG_union_type => unimplemented!(),
+        gimli::DW_TAG_unspecified_parameters => unimplemented!(),
+        gimli::DW_TAG_unspecified_type => unimplemented!(),
+        gimli::DW_TAG_upc_relaxed_type => unimplemented!(),
+        gimli::DW_TAG_upc_shared_type => unimplemented!(),
+        gimli::DW_TAG_upc_strict_type => unimplemented!(),
+        gimli::DW_TAG_variable => unimplemented!(),
+        gimli::DW_TAG_variant => unimplemented!(),
+        gimli::DW_TAG_variant_part => unimplemented!(),
+        gimli::DW_TAG_volatile_type => unimplemented!(),
+        gimli::DW_TAG_with_stmt => unimplemented!(),
+        gimli::DwTag(_) => {
+            Err(traits::Error::with_msg("Unrecognized DwTag value"))
+        }
+    }
+}
+
 impl<'a> Parse<'a> for object::File<'a> {
     type ItemsExtra = ();
 
@@ -118,12 +241,7 @@ where
     ) -> Result<(), traits::Error> {
         let (_id, debug_str) = extra;
 
-        let _item_kind: ir::ItemKind = match self.tag() {
-            gimli::DW_TAG_subprogram => unimplemented!(),
-            gimli::DW_TAG_inlined_subroutine => unimplemented!(),
-            gimli::DW_TAG_variable => unimplemented!(),
-            _ => unimplemented!(),
-        };
+        let item_kind: ir::ItemKind = ir_item_kind(self.tag())?;
 
         let name: String = self
             .attr(gimli::DW_AT_name)?
@@ -136,6 +254,27 @@ where
             ))?
             .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
             .to_string();
+
+        // Data objects (variables, types) may have a `DW_AT_location` object.
+
+        let size = match item_kind {
+            ir::ItemKind::Code(_) => {
+                // Check if entity has single DW_AT_low_pc,
+                // a (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges`
+                // value to represent the associated addresses.
+                unimplemented!();
+            },
+            ir::ItemKind::Data(_) => {
+                unimplemented!();
+            }
+            ir::ItemKind::Debug(_) => {
+                // TODO: According to `ir.rs`, this can include DWARF sections?
+                unimplemented!();
+            }
+            ir::ItemKind::Misc(_) => {
+                unimplemented!();
+            }
+        };
 
         // let size = current
         //     .attr(gimli::DW_AT_byte_size)?
