@@ -261,13 +261,16 @@ where
 
     fn parse_items(
         &self,
-        _items: &mut ir::ItemsBuilder,
+        items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (_id, debug_str) = extra;
+        let (id, debug_str) = extra;
 
         let item_kind: ir::ItemKind = ir_item_kind(self.tag())?;
 
+        // Identify the name of the entry.
+        // TODO: Not all entries have names, this might need to be determined
+        // using the `item_kind`.
         let name: String = self
             .attr(gimli::DW_AT_name)?
             .ok_or(traits::Error::with_msg(
@@ -280,9 +283,8 @@ where
             .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
             .to_string();
 
-        // Data objects (variables, types) may have a `DW_AT_location` object.
-
-        let size = match item_kind {
+        // Calculate the size of the entity associated with this entry.
+        let size: u32 = match item_kind {
             ir::ItemKind::Code(_) => {
                 // (Section 2.17) Check if entity has single DW_AT_low_pc,
                 // a (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges`
@@ -304,19 +306,11 @@ where
             }
         };
 
-        // let size = current
-        //     .attr(gimli::DW_AT_byte_size)?
-        //     .and_then(|attr| attr.udata_value())
-        //     .ok_or(traits::Error::with_msg(
-        //         "Could not find DW_AT_byte_size attribute for entry",
-        //     ))? as u32; // FIXUP: Should we change the size in ir::Item to u64?
+        // Create a new IR item for this entity, add it to the items builder.
+        let new_ir_item = ir::Item::new(id, name, size, item_kind);
+        items.add_item(new_ir_item);
 
-        // let new_ir_item = ir::Item::new(id, name, size, ir::Misc::new());
-        // items.add_item(new_ir_item);
-
-        unimplemented!();
-
-        // Ok(())
+        Ok(())
     }
 
     type EdgesExtra = ();
