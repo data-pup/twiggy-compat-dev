@@ -118,6 +118,13 @@ where
     ) -> Result<(), traits::Error> {
         let (_id, debug_str) = extra;
 
+        let _item_kind: ir::ItemKind = match self.tag() {
+            gimli::DW_TAG_subprogram => unimplemented!(),
+            gimli::DW_TAG_inlined_subroutine => unimplemented!(),
+            gimli::DW_TAG_variable => unimplemented!(),
+            _ => unimplemented!(),
+        };
+
         let _temp = self
             .attr(gimli::DW_AT_name)?
             .ok_or(traits::Error::with_msg(
@@ -127,6 +134,7 @@ where
             .ok_or(traits::Error::with_msg(
                 "Could not find entity name in string table",
             ))?;
+
         // .to_string()? // FIXUP: This causes an error?
         // .to_owned();
 
