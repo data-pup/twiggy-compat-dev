@@ -22,27 +22,21 @@ impl<'a> Parse<'a> for object::File<'a> {
         };
 
         // Get the contents of the .debug_abbrev section in the file.
-        let debug_abbrev_data = self
-            .section_data_by_name(".debug_abbrev")
-            .ok_or(
-                traits::Error::with_msg("Could not find .debug_abbrev section")
-            )?;
+        let debug_abbrev_data = self.section_data_by_name(".debug_abbrev").ok_or(
+            traits::Error::with_msg("Could not find .debug_abbrev section"),
+        )?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
         // Get the contents of the string table (.debug_str) section in the file.
         let debug_string_data = self
             .section_data_by_name(".debug_str")
-            .ok_or(
-                traits::Error::with_msg("Could not find .debug_str section")
-            )?;
+            .ok_or(traits::Error::with_msg("Could not find .debug_str section"))?;
         let debug_str = gimli::DebugStr::new(&debug_string_data, endian);
 
         // Get the contents of the .debug_info section in the file.
-        let debug_info_sect_data = self
-            .section_data_by_name(".debug_info")
-            .ok_or(
-                traits::Error::with_msg("Could not find .debug_info section")
-            )?;
+        let debug_info_sect_data = self.section_data_by_name(".debug_info").ok_or(
+            traits::Error::with_msg("Could not find .debug_info section"),
+        )?;
         let debug_info = gimli::DebugInfo::new(&debug_info_sect_data, endian);
 
         // Iterate through the entries inside of each unit.
@@ -134,16 +128,17 @@ where
     ) -> Result<(), traits::Error> {
         let (_id, debug_str) = extra;
 
-        let _temp = self.attr(gimli::DW_AT_name)?
+        let _temp = self
+            .attr(gimli::DW_AT_name)?
             .ok_or(traits::Error::with_msg(
-                "Could not find DW_AT_name attribute for debugging information entry"
+                "Could not find DW_AT_name attribute for debugging information entry",
             ))?
             .string_value(&debug_str)
             .ok_or(traits::Error::with_msg(
                 "Could not find entity name in string table",
             ))?;
-            // .to_string()? // FIXUP: This causes an error?
-            // .to_owned();
+        // .to_string()? // FIXUP: This causes an error?
+        // .to_owned();
 
         // let size = current
         //     .attr(gimli::DW_AT_byte_size)?
