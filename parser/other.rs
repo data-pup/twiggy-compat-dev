@@ -284,12 +284,14 @@ where
 
         let size = match item_kind {
             ir::ItemKind::Code(_) => {
-                // Check if entity has single DW_AT_low_pc,
+                // (Section 2.17) Check if entity has single DW_AT_low_pc,
                 // a (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges`
                 // value to represent the associated addresses.
                 unimplemented!();
             }
             ir::ItemKind::Data(_) => {
+                // (Section 2.16) Any DIE representing a data object, such as
+                // variables or parameters, may have a `DW_AT_location` attribute.
                 unimplemented!();
             }
             ir::ItemKind::Debug(_) => {
@@ -297,6 +299,7 @@ where
                 unimplemented!();
             }
             ir::ItemKind::Misc(_) => {
+                // TODO: How should miscellaneous items be handled?
                 unimplemented!();
             }
         };
