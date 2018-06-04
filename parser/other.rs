@@ -1,14 +1,13 @@
 use super::Parse;
 use fallible_iterator::FallibleIterator;
 use gimli;
-use ir::{self, Id};
+use ir;
 use object::{self, Object};
 use traits;
 
 impl<'a> Parse<'a> for object::File<'a> {
     type ItemsExtra = ();
 
-    /// Parse `Self` into one or more `ir::Item`s and add them to the builder.
     fn parse_items(
         &self,
         items: &mut ir::ItemsBuilder,
@@ -39,7 +38,7 @@ impl<'a> Parse<'a> for object::File<'a> {
         )?;
         let debug_info = gimli::DebugInfo::new(&debug_info_sect_data, endian);
 
-        // Iterate through the entries inside of each unit.
+        // Parse the items in each compilation unit in the file.
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
             let extra = (unit_id, debug_abbrev, debug_str);
             unit.parse_items(items, extra)?
@@ -48,11 +47,8 @@ impl<'a> Parse<'a> for object::File<'a> {
         Ok(())
     }
 
-    /// Any extra data needed to parse this type's edges.
     type EdgesExtra = ();
 
-    /// Parse edges between items. This is only called *after* we have already
-    /// parsed items.
     fn parse_edges(
         &self,
         _items: &mut ir::ItemsBuilder,
@@ -66,16 +62,13 @@ impl<'a, R> Parse<'a> for gimli::CompilationUnitHeader<R, R::Offset>
 where
     R: gimli::Reader,
 {
-    /// Any extra data needed to parse this type's items.
     type ItemsExtra = (usize, gimli::DebugAbbrev<R>, gimli::DebugStr<R>);
 
-    /// Parse `Self` into one or more `ir::Item`s and add them to the builder.
     fn parse_items(
         &self,
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        // Destructure the information in `extra`.
         let (unit_id, debug_abbrev, debug_str) = extra;
 
         // Find the abbreviations associated with this compilation unit.
@@ -84,25 +77,24 @@ where
             .expect("Could not find abbreviations");
 
         let mut entry_id = 0;
-        while let Some((depth, current)) = self.entries(&abbrevs).next_dfs()? {
+
+        // Parse the contained debugging information entries in depth-first order.
+        while let Some((depth, entry)) = self.entries(&abbrevs).next_dfs()? {
             // Bail out of the loop when we return to the starting position.
             if depth >= 0 {
                 break;
             }
 
-            let id = Id::entry(unit_id, entry_id);
-            current.parse_items(items, (id, &debug_str))?;
+            let id = ir::Id::entry(unit_id, entry_id);
+            entry.parse_items(items, (id, &debug_str))?;
             entry_id += 1;
         }
 
         Ok(())
     }
 
-    /// Any extra data needed to parse this type's edges.
     type EdgesExtra = ();
 
-    /// Parse edges between items. This is only called *after* we have already
-    /// parsed items.
     fn parse_edges(
         &self,
         _items: &mut ir::ItemsBuilder,
@@ -117,10 +109,8 @@ impl<'abbrev, 'unit, R> Parse<'unit>
 where
     R: gimli::Reader,
 {
-    /// Any extra data needed to parse this type's items.
-    type ItemsExtra = (Id, &'unit gimli::DebugStr<R>);
+    type ItemsExtra = (ir::Id, &'unit gimli::DebugStr<R>);
 
-    /// Parse `Self` into one or more `ir::Item`s and add them to the builder.
     fn parse_items(
         &self,
         _items: &mut ir::ItemsBuilder,
@@ -155,11 +145,8 @@ where
         // Ok(())
     }
 
-    /// Any extra data needed to parse this type's edges.
     type EdgesExtra = ();
 
-    /// Parse edges between items. This is only called *after* we have already
-    /// parsed items.
     fn parse_edges(
         &self,
         _items: &mut ir::ItemsBuilder,
