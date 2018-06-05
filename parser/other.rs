@@ -7,7 +7,13 @@ use traits;
 
 /// Find the `ItemKind` type for an entry with the given tag.
 /// FIXUP: Must this match be exhaustive? Is this even a good approach?
-fn ir_item_kind(tag: gimli::DwTag) -> Result<ir::ItemKind, traits::Error> {
+fn ir_item_kind<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<ir::ItemKind, traits::Error>
+where
+    R: gimli::Reader,
+{
+    let tag = die.tag();
     match tag {
         gimli::DW_TAG_null => unimplemented!(),
 
@@ -207,7 +213,7 @@ where
     ) -> Result<(), traits::Error> {
         let (id, debug_str) = extra;
 
-        let item_kind: ir::ItemKind = ir_item_kind(self.tag())?;
+        let item_kind: ir::ItemKind = ir_item_kind(&self)?;
 
         // Identify the name of the entry.
         // TODO: Not all entries have names, this might need to be determined
