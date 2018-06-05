@@ -159,11 +159,11 @@ where
                 .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
                 .to_string();
             Ok(name)
-        },
+        }
         None => {
             // FIXUP: Assign a name using the tag / entity type?
             match item_type {
-                _ => unimplemented!()
+                _ => unimplemented!(),
             }
         }
     }
