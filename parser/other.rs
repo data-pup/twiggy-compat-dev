@@ -144,23 +144,25 @@ where
 /// exist, or be a single null byte.
 fn item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    item_type: &ir::ItemKind,
     debug_str: &gimli::DebugStr<R>,
 ) -> Result<String, traits::Error>
 where
     R: gimli::Reader,
 {
-    let name = die
-        .attr(gimli::DW_AT_name)?
-        .ok_or(traits::Error::with_msg(
-            "Could not find DW_AT_name attribute for debugging information entry",
-        ))?
-        .string_value(&debug_str)
+    // FIXUP: This will be `None` if there is not DW_AT_name attribute.
+    let name_attr = die.attr(gimli::DW_AT_name)?;
+
+    let name = name_attr.map(|n| n.string_value(&debug_str))
         .ok_or(traits::Error::with_msg(
             "Could not find entity name in string table",
-        ))?
+        ))?;
+
+    let res = name
+        .unwrap() // FIXUP.
         .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
         .to_string();
-    Ok(name)
+    Ok(res)
 }
 
 impl<'a> Parse<'a> for object::File<'a> {
@@ -277,8 +279,8 @@ where
         let (id, debug_str) = extra;
 
         // Calculate the item's name, kind, and size.
-        let name = item_name(&self, &debug_str)?;
         let item_kind: ir::ItemKind = item_kind(&self)?;
+        let name = item_name(&self, &item_kind, &debug_str)?;
         let size = item_size(&self, &item_kind)?;
 
         // Create a new IR item for this entity, add it to the items builder.
