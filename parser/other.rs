@@ -105,7 +105,7 @@ where
 /// the DWARF v5 specification: 'Code Addresses, Ranges, and Base Addresses'
 /// FIXUP: Will we need to implement a separate function for other entry types?
 fn item_size<R>(
-    _die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     item_kind: &ir::ItemKind,
 ) -> Result<u32, traits::Error>
 where
@@ -120,7 +120,19 @@ where
         // a `DW_AT_ranges` value to represent the associated addresses. If only
         // `DW_AT_low_pc` exists, then the item only occupies a single address.
         ir::ItemKind::Code(_) => {
-            unimplemented!();
+            let low_pc_attr: Option<gimli::Attribute<R>> = die.attr(gimli::DW_AT_low_pc)?;
+            let high_pc_attr: Option<gimli::Attribute<R>> = die.attr(gimli::DW_AT_high_pc)?;
+            if low_pc_attr.is_some() && high_pc_attr.is_none() {
+                // The associated entity occupies a single address.
+                unimplemented!();
+            }
+            else if low_pc_attr.is_some() && high_pc_attr.is_some() {
+                // The associated entity occupies contiguous space in memory.
+                unimplemented!();
+            } else {
+                // Find the `DW_AT_ranges` attribute.
+                unimplemented!();
+            }
         }
         // (Section 2.16) Any DIE representing a data object, such as variables or parameters,
         // may have a `DW_AT_location` attribute.
