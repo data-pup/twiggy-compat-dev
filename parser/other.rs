@@ -7,7 +7,7 @@ use traits;
 
 /// Find the `ItemKind` type for an entry with the given tag.
 /// FIXUP: Must this match be exhaustive? Is this even a good approach?
-fn ir_item_kind<R>(
+fn item_kind<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
 ) -> Result<ir::ItemKind, traits::Error>
 where
@@ -98,6 +98,67 @@ where
         // Default case.
         gimli::DwTag(_) => Err(traits::Error::with_msg("Unrecognized DwTag value")),
     }
+}
+
+/// Calculate the size of an entity associated with a debugging information
+/// entry (DIE). For more information about this, refer to Section 2.17 of
+/// the DWARF v5 specification: 'Code Addresses, Ranges, and Base Addresses'
+/// FIXUP: Will we need to implement a separate function for other entry types?
+fn item_size<R>(
+    _die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    item_kind: &ir::ItemKind,
+) -> Result<u32, traits::Error>
+where
+    R: gimli::Reader,
+{
+    match item_kind {
+        ir::ItemKind::Code(_) => {
+            // (Section 2.17) Check if entity has single DW_AT_low_pc, a
+            // (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges` value to represent
+            // the associated addresses. If only `DW_AT_low_pc` exists, then the item
+            // only occupies a single address.
+
+            // Check if the entity occupies a contiguous range of addresses.
+            // let is_contiguous =
+
+            unimplemented!();
+        }
+        ir::ItemKind::Data(_) => {
+            // (Section 2.16) Any DIE representing a data object, such as
+            // variables or parameters, may have a `DW_AT_location` attribute.
+            unimplemented!();
+        }
+        ir::ItemKind::Debug(_) => {
+            // TODO: According to `ir.rs`, this can include DWARF sections?
+            unimplemented!();
+        }
+        ir::ItemKind::Misc(_) => {
+            // TODO: How should miscellaneous items be handled?
+            unimplemented!();
+        }
+    }
+}
+
+/// Calculate the item's name.
+fn item_name<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    debug_str: &gimli::DebugStr<R>,
+) -> Result<String, traits::Error>
+where
+    R: gimli::Reader,
+{
+    let name = die
+        .attr(gimli::DW_AT_name)?
+        .ok_or(traits::Error::with_msg(
+            "Could not find DW_AT_name attribute for debugging information entry",
+        ))?
+        .string_value(&debug_str)
+        .ok_or(traits::Error::with_msg(
+            "Could not find entity name in string table",
+        ))?
+        .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
+        .to_string();
+    Ok(name)
 }
 
 impl<'a> Parse<'a> for object::File<'a> {
@@ -213,45 +274,10 @@ where
     ) -> Result<(), traits::Error> {
         let (id, debug_str) = extra;
 
-        let item_kind: ir::ItemKind = ir_item_kind(&self)?;
-
-        // Identify the name of the entry.
-        // TODO: Not all entries have names, this might need to be determined
-        // using the `item_kind`.
-        let name: String = self
-            .attr(gimli::DW_AT_name)?
-            .ok_or(traits::Error::with_msg(
-                "Could not find DW_AT_name attribute for debugging information entry",
-            ))?
-            .string_value(&debug_str)
-            .ok_or(traits::Error::with_msg(
-                "Could not find entity name in string table",
-            ))?
-            .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
-            .to_string();
-
-        // Calculate the size of the entity associated with this entry.
-        let size: u32 = match item_kind {
-            ir::ItemKind::Code(_) => {
-                // (Section 2.17) Check if entity has single DW_AT_low_pc,
-                // a (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges`
-                // value to represent the associated addresses.
-                unimplemented!();
-            }
-            ir::ItemKind::Data(_) => {
-                // (Section 2.16) Any DIE representing a data object, such as
-                // variables or parameters, may have a `DW_AT_location` attribute.
-                unimplemented!();
-            }
-            ir::ItemKind::Debug(_) => {
-                // TODO: According to `ir.rs`, this can include DWARF sections?
-                unimplemented!();
-            }
-            ir::ItemKind::Misc(_) => {
-                // TODO: How should miscellaneous items be handled?
-                unimplemented!();
-            }
-        };
+        // Calculate the item's name, kind, and size.
+        let name = item_name(&self, &debug_str)?;
+        let item_kind: ir::ItemKind = item_kind(&self)?;
+        let size = item_size(&self, &item_kind)?;
 
         // Create a new IR item for this entity, add it to the items builder.
         let new_ir_item = ir::Item::new(id, name, size, item_kind);
