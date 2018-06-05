@@ -150,19 +150,23 @@ fn item_name<R>(
 where
     R: gimli::Reader,
 {
-    // FIXUP: This will be `None` if there is not DW_AT_name attribute.
-    let name_attr = die.attr(gimli::DW_AT_name)?;
-
-    let name = name_attr.map(|n| n.string_value(&debug_str))
-        .ok_or(traits::Error::with_msg(
-            "Could not find entity name in string table",
-        ))?;
-
-    let res = name
-        .unwrap() // FIXUP.
-        .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
-        .to_string();
-    Ok(res)
+    match die.attr(gimli::DW_AT_name)? {
+        Some(dw_at) => {
+            let name: String = dw_at.string_value(&debug_str)
+                .ok_or(traits::Error::with_msg(
+                    "Could not find entity name in string table",
+                ))?
+                .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
+                .to_string();
+            Ok(name)
+        },
+        None => {
+            // FIXUP: Assign a name using the tag / entity type?
+            match item_type {
+                _ => unimplemented!()
+            }
+        }
+    }
 }
 
 impl<'a> Parse<'a> for object::File<'a> {
