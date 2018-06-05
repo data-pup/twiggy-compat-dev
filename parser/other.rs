@@ -89,65 +89,6 @@ fn ir_item_kind(tag: gimli::DwTag) -> Result<ir::ItemKind, traits::Error> {
         gimli::DW_TAG_lo_user => unimplemented!(),
         gimli::DW_TAG_hi_user => unimplemented!(),
 
-        // SGI/MIPS extensions.
-        gimli::DW_TAG_MIPS_loop => unimplemented!(),
-
-        // HP extensions.
-        gimli::DW_TAG_HP_array_descriptor => unimplemented!(),
-        gimli::DW_TAG_HP_Bliss_field => unimplemented!(),
-        gimli::DW_TAG_HP_Bliss_field_set => unimplemented!(),
-
-        // GNU extensions.
-        gimli::DW_TAG_format_label => unimplemented!(),
-        gimli::DW_TAG_function_template => unimplemented!(),
-        gimli::DW_TAG_class_template => unimplemented!(),
-        gimli::DW_TAG_GNU_BINCL => unimplemented!(),
-        gimli::DW_TAG_GNU_EINCL => unimplemented!(),
-        gimli::DW_TAG_GNU_template_template_param => unimplemented!(),
-        gimli::DW_TAG_GNU_template_parameter_pack => unimplemented!(),
-        gimli::DW_TAG_GNU_formal_parameter_pack => unimplemented!(),
-        gimli::DW_TAG_GNU_call_site => unimplemented!(),
-        gimli::DW_TAG_GNU_call_site_parameter => unimplemented!(),
-
-        gimli::DW_TAG_APPLE_property => unimplemented!(),
-
-        // SUN extensions.
-        gimli::DW_TAG_SUN_function_template => unimplemented!(),
-        gimli::DW_TAG_SUN_class_template => unimplemented!(),
-        gimli::DW_TAG_SUN_struct_template => unimplemented!(),
-        gimli::DW_TAG_SUN_union_template => unimplemented!(),
-        gimli::DW_TAG_SUN_indirect_inheritance => unimplemented!(),
-        gimli::DW_TAG_SUN_codeflags => unimplemented!(),
-        gimli::DW_TAG_SUN_memop_info => unimplemented!(),
-        gimli::DW_TAG_SUN_omp_child_func => unimplemented!(),
-        gimli::DW_TAG_SUN_rtti_descriptor => unimplemented!(),
-        gimli::DW_TAG_SUN_dtor_info => unimplemented!(),
-        gimli::DW_TAG_SUN_dtor => unimplemented!(),
-        gimli::DW_TAG_SUN_f90_interface => unimplemented!(),
-        gimli::DW_TAG_SUN_fortran_vax_structure => unimplemented!(),
-
-        // ALTIUM extensions.
-        gimli::DW_TAG_ALTIUM_circ_type => unimplemented!(),
-        gimli::DW_TAG_ALTIUM_mwa_circ_type => unimplemented!(),
-        gimli::DW_TAG_ALTIUM_rev_carry_type => unimplemented!(),
-        gimli::DW_TAG_ALTIUM_rom => unimplemented!(),
-
-        // Extensions for UPC.
-        gimli::DW_TAG_upc_shared_type => unimplemented!(),
-        gimli::DW_TAG_upc_strict_type => unimplemented!(),
-        gimli::DW_TAG_upc_relaxed_type => unimplemented!(),
-
-        // PGI (STMicroelectronics) extensions.
-        gimli::DW_TAG_PGI_kanji_type => unimplemented!(),
-        gimli::DW_TAG_PGI_interface_block => unimplemented!(),
-
-        // Borland extensions.
-        gimli::DW_TAG_BORLAND_property => unimplemented!(),
-        gimli::DW_TAG_BORLAND_Delphi_string => unimplemented!(),
-        gimli::DW_TAG_BORLAND_Delphi_dynamic_array => unimplemented!(),
-        gimli::DW_TAG_BORLAND_Delphi_set => unimplemented!(),
-        gimli::DW_TAG_BORLAND_Delphi_variant => unimplemented!(),
-
         // Default case.
         gimli::DwTag(_) => Err(traits::Error::with_msg("Unrecognized DwTag value")),
     }
