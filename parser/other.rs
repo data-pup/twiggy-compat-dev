@@ -112,34 +112,36 @@ where
     R: gimli::Reader,
 {
     match item_kind {
+        // (Section 2.17) This includes any entities associated with executable machine code
+        // including compilation units, module initialization, subroutines, lexical blocks,
+        // try/catch blocks, labels, etc.
+        //
+        // Check if entity has single DW_AT_low_pc, a (DW_AT_low_pc, DW_AT_high_pc) pair, or
+        // a `DW_AT_ranges` value to represent the associated addresses. If only
+        // `DW_AT_low_pc` exists, then the item only occupies a single address.
         ir::ItemKind::Code(_) => {
-            // (Section 2.17) Check if entity has single DW_AT_low_pc, a
-            // (DW_AT_low_pc, DW_AT_high_pc) pair, or a `DW_AT_ranges` value to represent
-            // the associated addresses. If only `DW_AT_low_pc` exists, then the item
-            // only occupies a single address.
-
-            // Check if the entity occupies a contiguous range of addresses.
-            // let is_contiguous =
-
             unimplemented!();
         }
+        // (Section 2.16) Any DIE representing a data object, such as variables or parameters,
+        // may have a `DW_AT_location` attribute.
         ir::ItemKind::Data(_) => {
-            // (Section 2.16) Any DIE representing a data object, such as
-            // variables or parameters, may have a `DW_AT_location` attribute.
             unimplemented!();
         }
+        // TODO: According to `ir.rs`, this can include DWARF sections?
         ir::ItemKind::Debug(_) => {
-            // TODO: According to `ir.rs`, this can include DWARF sections?
             unimplemented!();
         }
         ir::ItemKind::Misc(_) => {
-            // TODO: How should miscellaneous items be handled?
             unimplemented!();
         }
     }
 }
 
-/// Calculate the item's name.
+/// Calculate the item's name. For more information about this, refer to Section 2.15 of
+/// the DWARF v5 specification: 'Identifier Names'. Any DIE associated representing an
+/// entity that has been given a name may have a `DW_AT_name` attribute. If there was
+/// not a name assigned to the entity in the source code, the attribute may either not
+/// exist, or be a single null byte.
 fn item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     debug_str: &gimli::DebugStr<R>,
