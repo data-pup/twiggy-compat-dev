@@ -10,9 +10,9 @@ extern crate parity_wasm;
 extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
 
-mod die_parse;
 mod die_item_kind;
 mod die_item_size;
+mod die_parse;
 mod object_parse;
 mod wasm;
 
