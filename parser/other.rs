@@ -132,27 +132,41 @@ where
                 // The associated entity occupies a single address.
                 (Some(_low_pc), None, _) => unimplemented!(),
                 // The associated entity occupies contiguous space in memory.
-                (Some(low), Some(high), _) => {
-                    let size: u64 = match high {
+                (Some(low_val), Some(high_val), _) => {
+                    let size: u64 = match high_val {
                         gimli::AttributeValue::Addr(end_addr) => {
-                            let start_addr: u64 = match low {
+                            let start_addr: u64 = match low_val {
                                 gimli::AttributeValue::Addr(a) => a,
-                                _ => return Err(traits::Error::with_msg("Could not identify low address")),
+                                _ => {
+                                    return Err(traits::Error::with_msg(
+                                        "Could not identify low address",
+                                    ))
+                                }
                             };
                             end_addr - start_addr
-                        },
+                        }
                         // TODO: Handle 1, 2, 4, 8 byte cases.
                         gimli::AttributeValue::Data1(_) => unimplemented!(),
                         gimli::AttributeValue::Data2(_) => unimplemented!(),
                         gimli::AttributeValue::Data4(_) => unimplemented!(),
                         gimli::AttributeValue::Data8(_) => unimplemented!(),
                         gimli::AttributeValue::Udata(offset) => offset,
-                        _ => return Err(traits::Error::with_msg("Unexpected DW_AT_high_pc encoding")),
+                        _ => {
+                            return Err(traits::Error::with_msg("Unexpected DW_AT_high_pc encoding"))
+                        }
                     };
                     Ok(size as u32)
                 }
                 // Find the `DW_AT_ranges` attribute.
-                (_, _, Some(_ranges)) => unimplemented!(),
+                (_, _, Some(range_val)) => {
+                    let _ranges_ref: gimli::DebugRangesOffset<R::Offset> = match range_val {
+                        gimli::AttributeValue::DebugRangesRef(r) => r,
+                        _ => {
+                            return Err(traits::Error::with_msg("Unexpected DW_AT_ranges encoding"))
+                        }
+                    };
+                    unimplemented!();
+                }
                 // Return an error if no location attributes could be found.
                 _ => Err(traits::Error::with_msg("Could not calculate size of item")),
             }
