@@ -119,23 +119,31 @@ where
         // Check if entity has single DW_AT_low_pc, a (DW_AT_low_pc, DW_AT_high_pc) pair, or
         // a `DW_AT_ranges` value to represent the associated addresses. If only
         // `DW_AT_low_pc` exists, then the item only occupies a single address.
+        //
+        // FIXUP: `DW_AT_high_pc` is sometimes the size, and sometimes an address?
         ir::ItemKind::Code(_) => {
-            let low_pc_attr: Option<gimli::Attribute<R>> = die.attr(gimli::DW_AT_low_pc)?;
-            let high_pc_attr: Option<gimli::Attribute<R>> = die.attr(gimli::DW_AT_high_pc)?;
-            if low_pc_attr.is_some() && high_pc_attr.is_none() {
+            let low_pc: Option<gimli::AttributeValue<R>> =
+                die.attr(gimli::DW_AT_low_pc)?.map(|attr| attr.value());
+            let high_pc: Option<gimli::AttributeValue<R>> =
+                die.attr(gimli::DW_AT_high_pc)?.map(|attr| attr.value());
+            let ranges: Option<gimli::AttributeValue<R>> =
+                die.attr(gimli::DW_AT_ranges)?.map(|attr| attr.value());
+            match (low_pc, high_pc, ranges) {
                 // The associated entity occupies a single address.
-                unimplemented!();
-            }
-            else if low_pc_attr.is_some() && high_pc_attr.is_some() {
+                (Some(_low_pc), None, ..) => unimplemented!(),
                 // The associated entity occupies contiguous space in memory.
-                unimplemented!();
-            } else {
+                (Some(_low), Some(_high), ..) => {
+                    unimplemented!();
+                }
                 // Find the `DW_AT_ranges` attribute.
-                unimplemented!();
+                (_, _, Some(_ranges)) => unimplemented!(),
+                // Return an error if no location attributes could be found.
+                _ => Err(traits::Error::with_msg("Could not calculate size of item")),
             }
         }
         // (Section 2.16) Any DIE representing a data object, such as variables or parameters,
         // may have a `DW_AT_location` attribute.
+        // TODO: This will either be 4 or 8? This is found in the compilation unit header?
         ir::ItemKind::Data(_) => {
             unimplemented!();
         }
