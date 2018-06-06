@@ -13,16 +13,14 @@ where
     let kind: ir::ItemKind = match tag {
         gimli::DW_TAG_null => unimplemented!(),
 
-    // Program Scope Entries: (Chapter 3)
-    // ------------------------------------------------------------------------
+        // Program Scope Entries: (Chapter 3)
+        // --------------------------------------------------------------------
 
         // Compilation units. (Section 3.1)
-        gimli::DW_TAG_compile_unit |
-        gimli::DW_TAG_partial_unit |
-        gimli::DW_TAG_imported_unit |
-        gimli::DW_TAG_skeleton_unit => {
-            unimplemented!()
-        },
+        gimli::DW_TAG_compile_unit
+        | gimli::DW_TAG_partial_unit
+        | gimli::DW_TAG_imported_unit
+        | gimli::DW_TAG_skeleton_unit => unimplemented!(),
 
         // Module, namespace, and imported entries. (Section 3.2)
         gimli::DW_TAG_module => unimplemented!(),
@@ -41,8 +39,8 @@ where
         // With statements. (Section 3.7)
         gimli::DW_TAG_with_stmt => unimplemented!(),
 
-    // Data Object and Object List Entries: (Chapter 4)
-    // ------------------------------------------------------------------------
+        // Data Object and Object List Entries: (Chapter 4)
+        // --------------------------------------------------------------------
 
         // Data object entries. (Section 4.1)
         gimli::DW_TAG_variable => unimplemented!(),
@@ -56,8 +54,8 @@ where
         gimli::DW_TAG_namelist => unimplemented!(),
         gimli::DW_TAG_namelist_item => unimplemented!(),
 
-    // Type Entries: (Chapter 5)
-    // ------------------------------------------------------------------------
+        // Type Entries: (Chapter 5)
+        // --------------------------------------------------------------------
 
         // Base type entries. (Section 5.1)
         gimli::DW_TAG_base_type => unimplemented!(),
@@ -150,10 +148,8 @@ where
         // Template alias type entries. (Section 5.17)
         gimli::DW_TAG_template_alias => unimplemented!(),
 
-
-    // Miscellaneous tags:
-    // ------------------------------------------------------------------------
-
+        // Miscellaneous tags:
+        // ------------------------------------------------------------------------
         gimli::DW_TAG_lexical_block => unimplemented!(),
 
         gimli::DW_TAG_try_block => unimplemented!(),
