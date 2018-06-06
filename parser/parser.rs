@@ -11,6 +11,7 @@ extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
 
 mod other;
+mod parse_die;
 mod wasm;
 
 use parity_wasm::elements;
