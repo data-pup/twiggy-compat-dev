@@ -130,10 +130,26 @@ where
                 die.attr(gimli::DW_AT_ranges)?.map(|attr| attr.value());
             match (low_pc, high_pc, ranges) {
                 // The associated entity occupies a single address.
-                (Some(_low_pc), None, ..) => unimplemented!(),
+                (Some(_low_pc), None, _) => unimplemented!(),
                 // The associated entity occupies contiguous space in memory.
-                (Some(_low), Some(_high), ..) => {
-                    unimplemented!();
+                (Some(low), Some(high), _) => {
+                    let size: u64 = match high {
+                        gimli::AttributeValue::Addr(end_addr) => {
+                            let start_addr: u64 = match low {
+                                gimli::AttributeValue::Addr(a) => a,
+                                _ => return Err(traits::Error::with_msg("Could not identify low address")),
+                            };
+                            end_addr - start_addr
+                        },
+                        // TODO: Handle 1, 2, 4, 8 byte cases.
+                        gimli::AttributeValue::Data1(_) => unimplemented!(),
+                        gimli::AttributeValue::Data2(_) => unimplemented!(),
+                        gimli::AttributeValue::Data4(_) => unimplemented!(),
+                        gimli::AttributeValue::Data8(_) => unimplemented!(),
+                        gimli::AttributeValue::Udata(offset) => offset,
+                        _ => return Err(traits::Error::with_msg("Unexpected DW_AT_high_pc encoding")),
+                    };
+                    Ok(size as u32)
                 }
                 // Find the `DW_AT_ranges` attribute.
                 (_, _, Some(_ranges)) => unimplemented!(),
