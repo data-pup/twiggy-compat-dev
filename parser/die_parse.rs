@@ -283,6 +283,7 @@ where
                 _ => Err(traits::Error::with_msg("Could not calculate size of item")),
             }
         }
+        ir::ItemKind::CompUnit => unimplemented!(),
         // (Section 2.16) Any DIE representing a data object, such as variables or parameters,
         // may have a `DW_AT_location` attribute.
         // TODO: This will either be 4 or 8? This is found in the compilation unit header?
