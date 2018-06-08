@@ -5,6 +5,8 @@ use ir;
 use object::{self, Object};
 use traits;
 
+use super::die_parse;
+
 impl<'a> Parse<'a> for object::File<'a> {
     type ItemsExtra = ();
 
@@ -89,6 +91,38 @@ where
             entry.parse_items(items, (id, &debug_str))?;
             entry_id += 1;
         }
+
+        Ok(())
+    }
+
+    type EdgesExtra = ();
+
+    fn parse_edges(
+        &self,
+        _items: &mut ir::ItemsBuilder,
+        _extra: Self::EdgesExtra,
+    ) -> Result<(), traits::Error> {
+        unimplemented!();
+    }
+}
+
+impl<'abbrev, 'unit, R> Parse<'unit> for gimli::DebuggingInformationEntry<'abbrev, 'unit, R, R::Offset>
+where
+    R: gimli::Reader,
+{
+    type ItemsExtra = (ir::Id, &'unit gimli::DebugStr<R>);
+
+    fn parse_items(&self, items: &mut ir::ItemsBuilder, extra: Self::ItemsExtra) -> Result<(), traits::Error> {
+        let (id, debug_str) = extra;
+
+        // Calculate the item's name, kind, and size.
+        let item_kind: ir::ItemKind = die_parse::item_kind(&self)?;
+        let name = self::die_parse::item_name(&self, &item_kind, &debug_str)?;
+        let size = self::die_parse::item_size(&self, &item_kind)?;
+
+        // Create a new IR item for this entity, add it to the items builder.
+        let new_ir_item = ir::Item::new(id, name, size, item_kind);
+        items.add_item(new_ir_item);
 
         Ok(())
     }
