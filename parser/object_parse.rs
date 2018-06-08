@@ -106,13 +106,18 @@ where
     }
 }
 
-impl<'abbrev, 'unit, R> Parse<'unit> for gimli::DebuggingInformationEntry<'abbrev, 'unit, R, R::Offset>
+impl<'abbrev, 'unit, R> Parse<'unit>
+    for gimli::DebuggingInformationEntry<'abbrev, 'unit, R, R::Offset>
 where
     R: gimli::Reader,
 {
     type ItemsExtra = (ir::Id, &'unit gimli::DebugStr<R>);
 
-    fn parse_items(&self, items: &mut ir::ItemsBuilder, extra: Self::ItemsExtra) -> Result<(), traits::Error> {
+    fn parse_items(
+        &self,
+        items: &mut ir::ItemsBuilder,
+        extra: Self::ItemsExtra,
+    ) -> Result<(), traits::Error> {
         let (id, debug_str) = extra;
 
         // Calculate the item's name, kind, and size.
