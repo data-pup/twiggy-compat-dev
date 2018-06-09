@@ -316,25 +316,21 @@ pub fn _item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     item_type: &ir::ItemKind,
     debug_str: &gimli::DebugStr<R>,
-) -> Result<String, traits::Error>
+) -> Result<Option<String>, traits::Error>
 where
     R: gimli::Reader,
 {
-    match die.attr(gimli::DW_AT_name)? {
-        Some(dw_at) => {
-            let name: String = dw_at.string_value(&debug_str)
-                .ok_or(traits::Error::with_msg(
-                    "Could not find entity name in string table",
-                ))?
-                .to_string()? // This `to_string()` returns a Result<Cow<'_, str>, _>
-                .to_string();
-            Ok(name)
-        }
-        None => {
-            // FIXUP: Assign a name using the tag / entity type?
-            match item_type {
-                _ => unimplemented!(),
-            }
-        }
+    if let Some(s) = die
+        .attr(gimli::DW_AT_name)?
+        .and_then(|attr| attr.string_value(&debug_str))
+    {
+        let name = Some(
+            s
+                .to_string()? // This `to_string()` returns a `Result<Cow<'_, str>, _>`.
+                .to_string(), // This `to_string()` returns a String.
+        );
+        Ok(name)
+    } else {
+        Ok(None)
     }
 }
