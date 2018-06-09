@@ -123,6 +123,13 @@ where
 
         let _name = item_name(self, debug_str)?;
 
+        // TEMP: Not sure if these attributes are worth grabbing prior to the match statement here.
+        let (_low_pc, _high_pc) = (
+            self.attr(gimli::DW_AT_low_pc)?.map(|attr| attr.value()),
+            self.attr(gimli::DW_AT_high_pc)?.map(|attr| attr.value())
+        );
+        let _ranges = self.attr(gimli::DW_AT_ranges)?.map(|attr| attr.value());
+
         // Create a new IR item representing this DIE, if applicably tagged.
         // TEMP: Item constructor: `ir::Item::new(id, name, size, item_kind)`
         let new_ir_item: Option<ir::Item> = match self.tag() {
