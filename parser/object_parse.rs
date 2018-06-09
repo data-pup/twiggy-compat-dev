@@ -119,7 +119,9 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (_id, _addr_size, _debug_str) = extra;
+        let (_id, _addr_size, debug_str) = extra;
+
+        let _name = item_name(self, debug_str);
 
         // Create a new IR item representing this DIE, if applicably tagged.
         // TEMP: Item constructor: `ir::Item::new(id, name, size, item_kind)`
@@ -312,9 +314,8 @@ where
 /// entity that has been given a name may have a `DW_AT_name` attribute. If there was
 /// not a name assigned to the entity in the source code, the attribute may either not
 /// exist, or be a single null byte.
-pub fn _item_name<R>(
+pub fn item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    item_type: &ir::ItemKind,
     debug_str: &gimli::DebugStr<R>,
 ) -> Result<Option<String>, traits::Error>
 where
