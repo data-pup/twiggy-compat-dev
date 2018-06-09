@@ -121,7 +121,7 @@ where
     ) -> Result<(), traits::Error> {
         let (_id, _addr_size, debug_str) = extra;
 
-        let _name = item_name(self, debug_str);
+        let _name = item_name(self, debug_str)?;
 
         // Create a new IR item representing this DIE, if applicably tagged.
         // TEMP: Item constructor: `ir::Item::new(id, name, size, item_kind)`
