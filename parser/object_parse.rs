@@ -291,6 +291,8 @@ where
             gimli::DwTag(_) => return Err(traits::Error::with_msg("Unrecognized DwTag value")),
         };
 
+        // If the current entry was tagged such that it corresponds to an item in
+        // the IR schema, add it to the items builder.
         if let Some(item) = new_ir_item {
             items.add_item(item);
         }
