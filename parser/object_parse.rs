@@ -29,7 +29,9 @@ impl<'input> Parse<'input> for object::File<'input> {
             'file: 'input,
             'a: 'file,
         {
-            let data = file.section_data_by_name(Sect::section_name()).unwrap_or(Cow::Borrowed(&[]));
+            let data = file
+                .section_data_by_name(Sect::section_name())
+                .unwrap_or(Cow::Borrowed(&[]));
             let data_ref = (*arena.alloc(data)).borrow();
             Sect::from(gimli::EndianSlice::new(data_ref, endian))
         }
@@ -45,20 +47,17 @@ impl<'input> Parse<'input> for object::File<'input> {
         // Load the sections of the file containing debugging information.
         let debug_abbrev: gimli::DebugAbbrev<_> = load_section(&arena, self, endian);
         let debug_aranges: gimli::DebugAranges<_> = load_section(&arena, self, endian);
+
         let debug_ranges: gimli::DebugRanges<_> = load_section(&arena, self, endian);
-        let _debug_rnglists: gimli::DebugRngLists<_> =load_section(&arena, self, endian);
+        let debug_rnglists: gimli::DebugRngLists<_> = load_section(&arena, self, endian);
+        let rnglists = &gimli::RangeLists::new(debug_ranges, debug_rnglists)?;
+
         let debug_str: gimli::DebugStr<_> = load_section(&arena, self, endian);
 
         // Load the `.debug_info` section, and parse the items in each compilation unit.
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
-            let extra = (
-                unit_id,
-                debug_abbrev,
-                &debug_aranges,
-                &debug_ranges,
-                debug_str,
-            );
+            let extra = (unit_id, debug_abbrev, &debug_aranges, rnglists, debug_str);
             unit.parse_items(items, extra)?
         }
 
@@ -84,7 +83,7 @@ where
         usize,
         gimli::DebugAbbrev<R>,
         &'a gimli::DebugAranges<R>,
-        &'a gimli::DebugRanges<R>,
+        &'a gimli::RangeLists<R>,
         gimli::DebugStr<R>,
     );
 
@@ -93,7 +92,7 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (unit_id, debug_abbrev, _debug_aranges, _debug_ranges, debug_str) = extra;
+        let (unit_id, debug_abbrev, _debug_aranges, _rnglists, debug_str) = extra;
 
         // Get the size of addresses in this type-unit.
         let addr_size = self.address_size();
