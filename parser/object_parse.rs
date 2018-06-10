@@ -26,11 +26,18 @@ impl<'a> Parse<'a> for object::File<'a> {
         )?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
+        // Get the contents of the compilation unit address lookup table
+        // (.debug_aranges) section of the file.
+        let debug_aranges_data = self.section_data_by_name(".debug_aranges").ok_or(
+            traits::Error::with_msg("Could not find .debug_aranges section"),
+        )?;
+        let debug_aranges = gimli::DebugAranges::new(&debug_aranges_data, endian);
+
         // Get the contents of the ranges table (.debug_ranges) section in the file.
         let debug_ranges_data = self.section_data_by_name(".debug_ranges").ok_or(
             traits::Error::with_msg("Could not find .debug_ranges section"),
         )?;
-        let _debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
+        let debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
 
         // Get the contents of the string table (.debug_str) section in the file.
         let debug_string_data = self
@@ -46,7 +53,13 @@ impl<'a> Parse<'a> for object::File<'a> {
 
         // Parse the items in each compilation unit in the file.
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
-            let extra = (unit_id, debug_abbrev, debug_str);
+            let extra = (
+                unit_id,
+                debug_abbrev,
+                &debug_aranges,
+                &debug_ranges,
+                debug_str,
+            );
             unit.parse_items(items, extra)?
         }
 
@@ -66,16 +79,22 @@ impl<'a> Parse<'a> for object::File<'a> {
 
 impl<'a, R> Parse<'a> for gimli::CompilationUnitHeader<R, R::Offset>
 where
-    R: gimli::Reader,
+    R: 'a + gimli::Reader,
 {
-    type ItemsExtra = (usize, gimli::DebugAbbrev<R>, gimli::DebugStr<R>);
+    type ItemsExtra = (
+        usize,
+        gimli::DebugAbbrev<R>,
+        &'a gimli::DebugAranges<R>,
+        &'a gimli::DebugRanges<R>,
+        gimli::DebugStr<R>,
+    );
 
     fn parse_items(
         &self,
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (unit_id, debug_abbrev, debug_str) = extra;
+        let (unit_id, debug_abbrev, _debug_aranges, _debug_ranges, debug_str) = extra;
 
         // Get the size of addresses in this type-unit.
         let addr_size = self.address_size();
@@ -341,8 +360,7 @@ where
             None => Ok(addr_size as u64),
         }
     } else {
-        let _ranges = item_ranges(die)?;
-        unimplemented!();
+        item_ranges(die)
     }
 }
 
