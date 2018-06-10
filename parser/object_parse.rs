@@ -26,6 +26,12 @@ impl<'a> Parse<'a> for object::File<'a> {
         )?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
+        // Get the contents of the ranges table (.debug_ranges) section in the file.
+        let debug_ranges_data = self
+            .section_data_by_name(".debug_ranges")
+            .ok_or(traits::Error::with_msg("Could not find .debug_ranges section"))?;
+        let _debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
+
         // Get the contents of the string table (.debug_str) section in the file.
         let debug_string_data = self
             .section_data_by_name(".debug_str")
@@ -119,19 +125,17 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (_id, _addr_size, debug_str) = extra;
+        let (id, addr_size, debug_str) = extra;
 
-        if let Some(new_item_kind) = item_kind(self) {
-            // Attributes that we will use to create an IR item.
-            let _name = item_name(self, debug_str)?;
-            let _high_pc = self.attr_value(gimli::DW_AT_high_pc)?;
-            let _ranges = self.attr_value(gimli::DW_AT_ranges)?;
+        if let Some(kind) = item_kind(self) {
+            let name_opt = item_name(self, debug_str)?;
 
-            let new_ir_item = match new_item_kind {
+            let new_ir_item = match kind {
                 ir::ItemKind::Code(_) => {
-                    let start_addr = item_base_address(self)?;
-                    let end_addr = item_end_address(self)?;
-                    unimplemented!();
+                    // FIXUP: Figure out name for entities without a `DW_AT_name`.
+                    let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
+                    let size = code_item_size(self, addr_size)? as u32;
+                    ir::Item::new(id, name, size, kind)
                 }
                 ir::ItemKind::Data(_) => {
                     let _location = self.attr_value(gimli::DW_AT_location)?;
@@ -170,18 +174,19 @@ pub fn item_name<R>(
 where
     R: gimli::Reader,
 {
-    if let Some(s) = die
+    match die
         .attr(gimli::DW_AT_name)?
         .and_then(|attr| attr.string_value(&debug_str))
     {
-        let name = Some(
-            s
-                .to_string()? // This `to_string()` returns a `Result<Cow<'_, str>, _>`.
-                .to_string(), // This `to_string()` returns a String.
-        );
-        Ok(name)
-    } else {
-        Ok(None)
+        Some(s) => {
+            let name = Some(
+                s
+                    .to_string()? // This `to_string()` creates a `Result<Cow<'_, str>, _>`.
+                    .to_string(), // This `to_string()` creates the String we return.
+            );
+            Ok(name)
+        }
+        None => Ok(None)
     }
 }
 
@@ -316,27 +321,74 @@ where
     }
 }
 
-fn item_base_address<R>(
+/// Find the size of an entity that has a machine code address, or a range of
+/// machine code addresses. This includes compilation units, module
+/// initialization, subroutines, lexical blocks, try/catch blocks (see Section
+/// 3.8 on page 93), labels, etc.
+///
+/// For more information about this, refer to Chapter 2.17 'Code Addresses,
+/// Ranges, and Base Addresses' (pg. 51) in the DWARF5 specification.
+fn code_item_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    addr_size: u8,
 ) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,
 {
-    match die.attr_value(gimli::DW_AT_low_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => Ok(address),
-        _ => Ok(0),
+    if let Some(low_pc) = item_low_pc(die)? {
+        match item_high_pc(die)? {
+            Some(high_pc) => Ok(high_pc - low_pc),
+            None => Ok(addr_size as u64)
+        }
+    } else {
+        let _ranges = item_ranges(die)?;
+        unimplemented!();
     }
 }
 
-fn item_end_address<R>(
+/// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
+/// a contiguous range of machine code addresses. If there is not a
+/// `DW_AT_low_pc` value, then the addresses are not contiguous, and
+/// `DW_AT_ranges` should be used instead.
+fn item_low_pc<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
 ) -> Result<Option<u64>, traits::Error>
 where
     R: gimli::Reader,
 {
     match die.attr_value(gimli::DW_AT_low_pc)? {
+        Some(gimli::AttributeValue::Addr(address)) => return Ok(Some(address)),
+        Some(_) => return Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
+        None => Ok(None)
+    }
+}
+
+/// Find the value of `DW_AT_high_pc` for a DIE representing an entity with
+/// a contiguous range of machine code addresses. If there is not a
+/// `DW_AT_high_pc` value for an entry with a `DW_AT_low_pc` attribute, then the
+/// item only occupies a single address.
+fn item_high_pc<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<Option<u64>, traits::Error>
+where
+    R: gimli::Reader,
+{
+    match die.attr_value(gimli::DW_AT_high_pc)? {
         Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
-        Some(_) => Err(traits::Error::with_msg("Unexpected end address value")),
-        None => Ok(None), // FIXUP: Unsure if this a good or bad idea atm.
+        Some(_) => return Err(traits::Error::with_msg("Unexpected DW_AT_high_pc value")),
+        None => Ok(None),
+    }
+}
+
+/// Find the ranges of addresses of machine code associated with an entity
+/// described by a given DIE.
+fn item_ranges<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<u64, traits::Error> // FIXUP: This will not return a u64.
+where
+    R: gimli::Reader,
+{
+    match die.attr_value(gimli::DW_AT_ranges)? {
+        _ => unimplemented!(),
     }
 }
