@@ -130,7 +130,9 @@ where
             let _ranges = self.attr_value(gimli::DW_AT_ranges)?;
 
             let new_ir_item = match new_item_kind {
-                ir::ItemKind::Code(_) => unimplemented!(),
+                ir::ItemKind::Code(_) => {
+                    unimplemented!();
+                }
                 ir::ItemKind::Data(_) => unimplemented!(),
                 ir::ItemKind::Debug(_) => unimplemented!(),
                 ir::ItemKind::Misc(_) => unimplemented!(),
