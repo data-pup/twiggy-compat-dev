@@ -1,11 +1,15 @@
-use super::Parse;
+use std::borrow::{Borrow, Cow};
+
 use fallible_iterator::FallibleIterator;
 use gimli;
 use ir;
 use object::{self, Object};
 use traits;
+use typed_arena::Arena;
 
-impl<'a> Parse<'a> for object::File<'a> {
+use super::Parse;
+
+impl<'input> Parse<'input> for object::File<'input> {
     type ItemsExtra = ();
 
     fn parse_items(
@@ -13,51 +17,40 @@ impl<'a> Parse<'a> for object::File<'a> {
         items: &mut ir::ItemsBuilder,
         _extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        // Identify the endianty of the file.
+        // Helper function used to load a given section of the file.
+        fn load_section<'a, 'file, 'input, Sect, Endian>(
+            arena: &'a Arena<Cow<'file, [u8]>>,
+            file: &'file object::File<'input>,
+            endian: Endian,
+        ) -> Sect
+        where
+            Sect: gimli::Section<gimli::EndianSlice<'a, Endian>>,
+            Endian: gimli::Endianity,
+            'file: 'input,
+            'a: 'file,
+        {
+            let data = file.section_data_by_name(Sect::section_name()).unwrap_or(Cow::Borrowed(&[]));
+            let data_ref = (*arena.alloc(data)).borrow();
+            Sect::from(gimli::EndianSlice::new(data_ref, endian))
+        }
+
+        // Identify the file's endianty and create a typed arena to load sections.
+        let arena = Arena::new();
         let endian = if self.is_little_endian() {
             gimli::RunTimeEndian::Little
         } else {
             gimli::RunTimeEndian::Big
         };
 
-        // Get the contents of the .debug_abbrev section.
-        let debug_abbrev_data = self.section_data_by_name(".debug_abbrev").ok_or(
-            traits::Error::with_msg("Could not find .debug_abbrev section"),
-        )?;
-        let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
+        // Load the sections of the file containing debugging information.
+        let debug_abbrev: gimli::DebugAbbrev<_> = load_section(&arena, self, endian);
+        let debug_aranges: gimli::DebugAranges<_> = load_section(&arena, self, endian);
+        let debug_ranges: gimli::DebugRanges<_> = load_section(&arena, self, endian);
+        let _debug_rnglists: gimli::DebugRngLists<_> =load_section(&arena, self, endian);
+        let debug_str: gimli::DebugStr<_> = load_section(&arena, self, endian);
 
-        // Get the contents of the compilation unit address lookup table
-        // (.debug_aranges) section.
-        let debug_aranges_data = self.section_data_by_name(".debug_aranges").ok_or(
-            traits::Error::with_msg("Could not find .debug_aranges section"),
-        )?;
-        let debug_aranges = gimli::DebugAranges::new(&debug_aranges_data, endian);
-
-        // Get the contents of the ranges table (.debug_ranges) section.
-        let debug_ranges_data = self.section_data_by_name(".debug_ranges").ok_or(
-            traits::Error::with_msg("Could not find .debug_ranges section"),
-        )?;
-        let debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
-
-        // Get the contents of the DWARF5 range lists (.debug_rnglists) section.
-        let debug_rnglist_data = self.section_data_by_name(".debug_rnglists").ok_or(
-            traits::Error::with_msg("Could not find .debug_rnglists section"),
-        )?;
-        let debug_rnglists = gimli::DebugRngLists::new(&debug_rnglist_data, endian);
-
-        // Get the contents of the string table (.debug_str) section.
-        let debug_string_data = self
-            .section_data_by_name(".debug_str")
-            .ok_or(traits::Error::with_msg("Could not find .debug_str section"))?;
-        let debug_str = gimli::DebugStr::new(&debug_string_data, endian);
-
-        // Get the contents of the .debug_info section.
-        let debug_info_sect_data = self.section_data_by_name(".debug_info").ok_or(
-            traits::Error::with_msg("Could not find .debug_info section"),
-        )?;
-        let debug_info = gimli::DebugInfo::new(&debug_info_sect_data, endian);
-
-        // Parse the items in each compilation unit.
+        // Load the `.debug_info` section, and parse the items in each compilation unit.
+        let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
             let extra = (
                 unit_id,
