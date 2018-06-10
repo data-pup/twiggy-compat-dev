@@ -359,7 +359,7 @@ where
 {
     match item_low_pc(die)? {
         Some(low_pc) => contiguous_code_item_size(die, low_pc, addr_size),
-        None => code_item_ranges_size(die, rnglists),
+        None => code_item_ranges_size(die, addr_size, rnglists),
     }
 }
 
@@ -406,13 +406,14 @@ where
 /// FIXUP: This will need an offset parameter.
 fn code_item_ranges_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    _addr_size: u8,
     _rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,
 {
     match die.attr_value(gimli::DW_AT_ranges)? {
-        Some(gimli::AttributeValue::RangeListsRef(offset)) => {
+        Some(gimli::AttributeValue::RangeListsRef(_offset)) => {
             // EXAMPLE CODE FROM `dwarfdump.rs` (Note: Figure out base_address value? low_pc???)
             // let raw_ranges = rnglists.raw_ranges(offset, unit.version, unit.address_size)?;
             // let raw_ranges: Vec<_> = raw_ranges.collect()?;
