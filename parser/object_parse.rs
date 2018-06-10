@@ -131,7 +131,6 @@ where
 
             let new_ir_item = match new_item_kind {
                 ir::ItemKind::Code(_) => unimplemented!(),
-                ir::ItemKind::CompUnit => unimplemented!(),
                 ir::ItemKind::Data(_) => unimplemented!(),
                 ir::ItemKind::Debug(_) => unimplemented!(),
                 ir::ItemKind::Misc(_) => unimplemented!(),
