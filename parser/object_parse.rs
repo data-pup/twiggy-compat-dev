@@ -124,16 +124,19 @@ where
         if let Some(new_item_kind) = item_kind(self) {
             // Attributes that we will use to create an IR item.
             let _name = item_name(self, debug_str)?;
-            let _location = self.attr_value(gimli::DW_AT_location)?;
-            let _low_pc = self.attr_value(gimli::DW_AT_low_pc)?;
             let _high_pc = self.attr_value(gimli::DW_AT_high_pc)?;
             let _ranges = self.attr_value(gimli::DW_AT_ranges)?;
 
             let new_ir_item = match new_item_kind {
                 ir::ItemKind::Code(_) => {
+                    let start_addr = item_base_address(self)?;
+                    let end_addr = item_end_address(self)?;
                     unimplemented!();
                 }
-                ir::ItemKind::Data(_) => unimplemented!(),
+                ir::ItemKind::Data(_) => {
+                    let _location = self.attr_value(gimli::DW_AT_location)?;
+                    unimplemented!();
+                }
                 ir::ItemKind::Debug(_) => unimplemented!(),
                 ir::ItemKind::Misc(_) => unimplemented!(),
             };
@@ -308,8 +311,32 @@ where
         gimli::DW_TAG_generic_subrange => unimplemented!(),
         gimli::DW_TAG_lo_user => unimplemented!(),
         gimli::DW_TAG_hi_user => unimplemented!(),
-
         // Default case.   (FIXUP: Should this return a `ItemKind::Misc`?)
         gimli::DwTag(_) => None,
+    }
+}
+
+fn item_base_address<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<u64, traits::Error>
+where
+    R: gimli::Reader,
+{
+    match die.attr_value(gimli::DW_AT_low_pc)? {
+        Some(gimli::AttributeValue::Addr(address)) => Ok(address),
+        _ => Ok(0),
+    }
+}
+
+fn item_end_address<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<Option<u64>, traits::Error>
+where
+    R: gimli::Reader,
+{
+    match die.attr_value(gimli::DW_AT_low_pc)? {
+        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
+        Some(_) => Err(traits::Error::with_msg("Unexpected end address value")),
+        None => Ok(None), // FIXUP: Unsure if this a good or bad idea atm.
     }
 }
