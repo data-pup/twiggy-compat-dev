@@ -504,9 +504,6 @@ pub enum ItemKind {
     /// Executable code. Function bodies.
     Code(Code),
 
-    /// Compilation unit.
-    CompUnit,
-
     /// Data inside the binary that may or may not end up loaded into memory
     /// with the executable code.
     Data(Data),
