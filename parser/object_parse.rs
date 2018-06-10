@@ -357,13 +357,9 @@ fn code_item_size<R>(
 where
     R: gimli::Reader,
 {
-    if let Some(low_pc) = item_low_pc(die)? {
-        match item_high_pc(die)? {
-            Some(high_pc) => Ok(high_pc - low_pc),
-            None => Ok(addr_size as u64),
-        }
-    } else {
-        item_ranges(die, rnglists)
+    match item_low_pc(die)? {
+        Some(low_pc) => contiguous_code_item_size(die, low_pc, addr_size),
+        None => code_item_ranges_size(die, rnglists),
     }
 }
 
@@ -378,8 +374,8 @@ where
     R: gimli::Reader,
 {
     match die.attr_value(gimli::DW_AT_low_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => return Ok(Some(address)),
-        Some(_) => return Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
+        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
+        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
         None => Ok(None),
     }
 }
@@ -388,16 +384,19 @@ where
 /// a contiguous range of machine code addresses. If there is not a
 /// `DW_AT_high_pc` value for an entry with a `DW_AT_low_pc` attribute, then the
 /// item only occupies a single address.
-fn item_high_pc<R>(
+fn contiguous_code_item_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-) -> Result<Option<u64>, traits::Error>
+    low_pc: u64,
+    addr_size: u8,
+) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,
 {
     match die.attr_value(gimli::DW_AT_high_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
-        Some(_) => return Err(traits::Error::with_msg("Unexpected DW_AT_high_pc value")),
-        None => Ok(None),
+        Some(gimli::AttributeValue::Addr(address)) => Ok(address - low_pc),
+        Some(gimli::AttributeValue::Udata(offset)) => Ok(offset),
+        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_high_pc value")),
+        None => Ok(addr_size as u64),
     }
 }
 
@@ -405,7 +404,7 @@ where
 /// described by a given DIE.
 ///
 /// FIXUP: This will need an offset parameter.
-fn item_ranges<R>(
+fn code_item_ranges_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
