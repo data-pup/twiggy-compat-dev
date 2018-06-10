@@ -27,9 +27,9 @@ impl<'a> Parse<'a> for object::File<'a> {
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
         // Get the contents of the ranges table (.debug_ranges) section in the file.
-        let debug_ranges_data = self
-            .section_data_by_name(".debug_ranges")
-            .ok_or(traits::Error::with_msg("Could not find .debug_ranges section"))?;
+        let debug_ranges_data = self.section_data_by_name(".debug_ranges").ok_or(
+            traits::Error::with_msg("Could not find .debug_ranges section"),
+        )?;
         let _debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
 
         // Get the contents of the string table (.debug_str) section in the file.
@@ -186,7 +186,7 @@ where
             );
             Ok(name)
         }
-        None => Ok(None)
+        None => Ok(None),
     }
 }
 
@@ -338,7 +338,7 @@ where
     if let Some(low_pc) = item_low_pc(die)? {
         match item_high_pc(die)? {
             Some(high_pc) => Ok(high_pc - low_pc),
-            None => Ok(addr_size as u64)
+            None => Ok(addr_size as u64),
         }
     } else {
         let _ranges = item_ranges(die)?;
@@ -359,7 +359,7 @@ where
     match die.attr_value(gimli::DW_AT_low_pc)? {
         Some(gimli::AttributeValue::Addr(address)) => return Ok(Some(address)),
         Some(_) => return Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
-        None => Ok(None)
+        None => Ok(None),
     }
 }
 
@@ -384,7 +384,8 @@ where
 /// described by a given DIE.
 fn item_ranges<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-) -> Result<u64, traits::Error> // FIXUP: This will not return a u64.
+) -> Result<u64, traits::Error>
+// FIXUP: This will not return a u64.
 where
     R: gimli::Reader,
 {
