@@ -7,6 +7,7 @@ extern crate fallible_iterator;
 extern crate gimli;
 extern crate object;
 extern crate parity_wasm;
+extern crate typed_arena;
 extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
 
