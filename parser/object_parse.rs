@@ -413,10 +413,10 @@ where
 {
     match die.attr_value(gimli::DW_AT_ranges)? {
         Some(gimli::AttributeValue::RangeListsRef(offset)) => {
-                // EXAMPLE CODE FROM `dwarfdump.rs` (Note: Figure out base_address value? low_pc???)
-                // let raw_ranges = rnglists.raw_ranges(offset, unit.version, unit.address_size)?;
-                // let raw_ranges: Vec<_> = raw_ranges.collect()?;
-                // let mut ranges = rnglists.ranges(offset, unit.version, unit.address_size, unit.base_address)?;
+            // EXAMPLE CODE FROM `dwarfdump.rs` (Note: Figure out base_address value? low_pc???)
+            // let raw_ranges = rnglists.raw_ranges(offset, unit.version, unit.address_size)?;
+            // let raw_ranges: Vec<_> = raw_ranges.collect()?;
+            // let mut ranges = rnglists.ranges(offset, unit.version, unit.address_size, unit.base_address)?;
             unimplemented!();
         }
         _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
