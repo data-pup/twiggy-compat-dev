@@ -20,38 +20,44 @@ impl<'a> Parse<'a> for object::File<'a> {
             gimli::RunTimeEndian::Big
         };
 
-        // Get the contents of the .debug_abbrev section in the file.
+        // Get the contents of the .debug_abbrev section.
         let debug_abbrev_data = self.section_data_by_name(".debug_abbrev").ok_or(
             traits::Error::with_msg("Could not find .debug_abbrev section"),
         )?;
         let debug_abbrev = gimli::DebugAbbrev::new(&debug_abbrev_data, endian);
 
         // Get the contents of the compilation unit address lookup table
-        // (.debug_aranges) section of the file.
+        // (.debug_aranges) section.
         let debug_aranges_data = self.section_data_by_name(".debug_aranges").ok_or(
             traits::Error::with_msg("Could not find .debug_aranges section"),
         )?;
         let debug_aranges = gimli::DebugAranges::new(&debug_aranges_data, endian);
 
-        // Get the contents of the ranges table (.debug_ranges) section in the file.
+        // Get the contents of the ranges table (.debug_ranges) section.
         let debug_ranges_data = self.section_data_by_name(".debug_ranges").ok_or(
             traits::Error::with_msg("Could not find .debug_ranges section"),
         )?;
         let debug_ranges = gimli::DebugRanges::new(&debug_ranges_data, endian);
 
-        // Get the contents of the string table (.debug_str) section in the file.
+        // Get the contents of the DWARF5 range lists (.debug_rnglists) section.
+        let debug_rnglist_data = self.section_data_by_name(".debug_rnglists").ok_or(
+            traits::Error::with_msg("Could not find .debug_rnglists section"),
+        )?;
+        let debug_rnglists = gimli::DebugRngLists::new(&debug_rnglist_data, endian);
+
+        // Get the contents of the string table (.debug_str) section.
         let debug_string_data = self
             .section_data_by_name(".debug_str")
             .ok_or(traits::Error::with_msg("Could not find .debug_str section"))?;
         let debug_str = gimli::DebugStr::new(&debug_string_data, endian);
 
-        // Get the contents of the .debug_info section in the file.
+        // Get the contents of the .debug_info section.
         let debug_info_sect_data = self.section_data_by_name(".debug_info").ok_or(
             traits::Error::with_msg("Could not find .debug_info section"),
         )?;
         let debug_info = gimli::DebugInfo::new(&debug_info_sect_data, endian);
 
-        // Parse the items in each compilation unit in the file.
+        // Parse the items in each compilation unit.
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
             let extra = (
                 unit_id,
