@@ -46,18 +46,17 @@ impl<'input> Parse<'input> for object::File<'input> {
 
         // Load the sections of the file containing debugging information.
         let debug_abbrev: gimli::DebugAbbrev<_> = load_section(&arena, self, endian);
-        let debug_aranges: gimli::DebugAranges<_> = load_section(&arena, self, endian);
-
+        let _debug_aranges: gimli::DebugAranges<_> = load_section(&arena, self, endian);
         let debug_ranges: gimli::DebugRanges<_> = load_section(&arena, self, endian);
         let debug_rnglists: gimli::DebugRngLists<_> = load_section(&arena, self, endian);
-        let rnglists = &gimli::RangeLists::new(debug_ranges, debug_rnglists)?;
-
         let debug_str: gimli::DebugStr<_> = load_section(&arena, self, endian);
+
+        let rnglists = &gimli::RangeLists::new(debug_ranges, debug_rnglists)?;
 
         // Load the `.debug_info` section, and parse the items in each compilation unit.
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
-            let extra = (unit_id, debug_abbrev, &debug_aranges, rnglists, debug_str);
+            let extra = (unit_id, debug_abbrev, debug_str, rnglists);
             unit.parse_items(items, extra)?
         }
 
@@ -75,16 +74,15 @@ impl<'input> Parse<'input> for object::File<'input> {
     }
 }
 
-impl<'a, R> Parse<'a> for gimli::CompilationUnitHeader<R, R::Offset>
+impl<'input, R> Parse<'input> for gimli::CompilationUnitHeader<R, R::Offset>
 where
-    R: 'a + gimli::Reader,
+    R: 'input + gimli::Reader,
 {
     type ItemsExtra = (
         usize,
         gimli::DebugAbbrev<R>,
-        &'a gimli::DebugAranges<R>,
-        &'a gimli::RangeLists<R>,
         gimli::DebugStr<R>,
+        &'input gimli::RangeLists<R>,
     );
 
     fn parse_items(
@@ -92,7 +90,7 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (unit_id, debug_abbrev, _debug_aranges, _rnglists, debug_str) = extra;
+        let (unit_id, debug_abbrev, debug_str, rnglists) = extra;
 
         // Get the size of addresses in this type-unit.
         let addr_size = self.address_size();
@@ -102,7 +100,7 @@ where
             .abbreviations(&debug_abbrev)
             .expect("Could not find abbreviations");
 
-        let mut entry_id = 0;
+        let mut entry_id = 0; // Debugging information entry ID counter.
 
         // Parse the contained debugging information entries in depth-first order.
         while let Some((depth, entry)) = self.entries(&abbrevs).next_dfs()? {
@@ -112,7 +110,8 @@ where
             }
 
             let id = ir::Id::entry(unit_id, entry_id);
-            entry.parse_items(items, (id, addr_size, &debug_str))?;
+            let die_extra = (id, addr_size, &debug_str, rnglists);
+            entry.parse_items(items, die_extra)?;
             entry_id += 1;
         }
 
@@ -135,14 +134,19 @@ impl<'abbrev, 'unit, R> Parse<'unit>
 where
     R: gimli::Reader,
 {
-    type ItemsExtra = (ir::Id, u8, &'unit gimli::DebugStr<R>);
+    type ItemsExtra = (
+        ir::Id,
+        u8,
+        &'unit gimli::DebugStr<R>,
+        &'unit gimli::RangeLists<R>,
+    );
 
     fn parse_items(
         &self,
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (id, addr_size, debug_str) = extra;
+        let (id, addr_size, debug_str, _rnglists) = extra;
 
         if let Some(kind) = item_kind(self) {
             let name_opt = item_name(self, debug_str)?;
