@@ -146,7 +146,7 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (id, addr_size, debug_str, _rnglists) = extra;
+        let (id, addr_size, debug_str, rnglists) = extra;
 
         if let Some(kind) = item_kind(self) {
             let name_opt = item_name(self, debug_str)?;
@@ -155,7 +155,7 @@ where
                 ir::ItemKind::Code(_) => {
                     // FIXUP: Figure out name for entities without a `DW_AT_name`.
                     let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
-                    let size = code_item_size(self, addr_size)? as u32;
+                    let size = code_item_size(self, addr_size, rnglists)? as u32;
                     ir::Item::new(id, name, size, kind)
                 }
                 ir::ItemKind::Data(_) => {
@@ -352,6 +352,7 @@ where
 fn code_item_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     addr_size: u8,
+    rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,
@@ -362,7 +363,7 @@ where
             None => Ok(addr_size as u64),
         }
     } else {
-        item_ranges(die)
+        item_ranges(die, rnglists)
     }
 }
 
@@ -402,10 +403,12 @@ where
 
 /// Find the ranges of addresses of machine code associated with an entity
 /// described by a given DIE.
+///
+/// FIXUP: This will need an offset parameter.
 fn item_ranges<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    _rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
-// FIXUP: This will not return a u64.
 where
     R: gimli::Reader,
 {
