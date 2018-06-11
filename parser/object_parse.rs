@@ -409,19 +409,36 @@ where
 /// FIXUP: This will need an offset parameter.
 fn code_item_ranges_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    _addr_size: u8,
-    _version: u16,
-    _rnglists: &gimli::RangeLists<R>,
+    addr_size: u8,
+    version: u16,
+    rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,
 {
     match die.attr_value(gimli::DW_AT_ranges)? {
-        Some(gimli::AttributeValue::RangeListsRef(_offset)) => {
-            // EXAMPLE CODE FROM `dwarfdump.rs` (Note: Figure out base_address value? low_pc???)
-            // let raw_ranges = rnglists.raw_ranges(offset, unit.version, unit.address_size)?;
-            // let raw_ranges: Vec<_> = raw_ranges.collect()?;
-            // let mut ranges = rnglists.ranges(offset, unit.version, unit.address_size, unit.base_address)?;
+        Some(gimli::AttributeValue::RangeListsRef(offset)) => {
+            // FIXUP: Is passing 0 to `ranges` as the base address incorrect?
+            let raw_ranges: Vec<_> = rnglists.raw_ranges(offset, version, addr_size)?.collect()?;
+            let mut _ranges = rnglists.ranges(offset, version, addr_size, 0)?;
+
+            for (i, raw) in raw_ranges.iter().enumerate() {
+                match raw {
+                    &gimli::RawRngListEntry::BaseAddress { addr: _ } => unimplemented!(),
+                    &gimli::RawRngListEntry::OffsetPair { begin: _, end: _ } => unimplemented!(),
+                    &gimli::RawRngListEntry::StartEnd { begin: _, end: _ } => unimplemented!(),
+                    &gimli::RawRngListEntry::StartLength {
+                        begin: _,
+                        length: _,
+                    } => unimplemented!(),
+                    _ => {
+                        return Err(traits::Error::with_msg(
+                            "AddressIndex not handled, should already have errored out",
+                        ))
+                    }
+                };
+            }
+
             unimplemented!();
         }
         _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
