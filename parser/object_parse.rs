@@ -93,7 +93,8 @@ where
         let (unit_id, debug_abbrev, debug_str, rnglists) = extra;
 
         // Get the size of addresses in this type-unit.
-        let addr_size = self.address_size();
+        let addr_size: u8 = self.address_size();
+        let version: u16 = self.version();
 
         // Find the abbreviations associated with this compilation unit.
         let abbrevs = self
@@ -110,7 +111,7 @@ where
             }
 
             let id = ir::Id::entry(unit_id, entry_id);
-            let die_extra = (id, addr_size, &debug_str, rnglists);
+            let die_extra = (id, addr_size, version, &debug_str, rnglists);
             entry.parse_items(items, die_extra)?;
             entry_id += 1;
         }
@@ -137,6 +138,7 @@ where
     type ItemsExtra = (
         ir::Id,
         u8,
+        u16,
         &'unit gimli::DebugStr<R>,
         &'unit gimli::RangeLists<R>,
     );
@@ -146,7 +148,7 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        let (id, addr_size, debug_str, rnglists) = extra;
+        let (id, addr_size, version, debug_str, rnglists) = extra;
 
         if let Some(kind) = item_kind(self) {
             let name_opt = item_name(self, debug_str)?;
@@ -155,7 +157,7 @@ where
                 ir::ItemKind::Code(_) => {
                     // FIXUP: Figure out name for entities without a `DW_AT_name`.
                     let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
-                    let size = code_item_size(self, addr_size, rnglists)? as u32;
+                    let size = code_item_size(self, addr_size, version, rnglists)? as u32;
                     ir::Item::new(id, name, size, kind)
                 }
                 ir::ItemKind::Data(_) => {
@@ -352,6 +354,7 @@ where
 fn code_item_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     addr_size: u8,
+    version: u16,
     rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
@@ -359,7 +362,7 @@ where
 {
     match item_low_pc(die)? {
         Some(low_pc) => contiguous_code_item_size(die, low_pc, addr_size),
-        None => code_item_ranges_size(die, addr_size, rnglists),
+        None => code_item_ranges_size(die, addr_size, version, rnglists),
     }
 }
 
@@ -407,6 +410,7 @@ where
 fn code_item_ranges_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _addr_size: u8,
+    _version: u16,
     _rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
