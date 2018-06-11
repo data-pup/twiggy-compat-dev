@@ -403,10 +403,8 @@ where
     }
 }
 
-/// Find the ranges of addresses of machine code associated with an entity
-/// described by a given DIE.
-///
-/// FIXUP: This will need an offset parameter.
+/// Find the total size of a compilation unit whose code occupies a
+/// non-contiguous range of addresses in an object file.
 fn code_item_ranges_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     addr_size: u8,
@@ -418,28 +416,26 @@ where
 {
     match die.attr_value(gimli::DW_AT_ranges)? {
         Some(gimli::AttributeValue::RangeListsRef(offset)) => {
-            // FIXUP: Is passing 0 to `ranges` as the base address incorrect?
-            let raw_ranges: Vec<_> = rnglists.raw_ranges(offset, version, addr_size)?.collect()?;
-            let mut _ranges = rnglists.ranges(offset, version, addr_size, 0)?;
+            // FIXUP: This declaration of base_address feels super
+            // janky, and needs to be fixed by restructuring control flow above.
+            let base_address = if die.tag() == gimli::DW_TAG_compile_unit
+                || die.tag() == gimli::DW_TAG_type_unit
+            {
+                match die.attr_value(gimli::DW_AT_low_pc)? {
+                    Some(gimli::AttributeValue::Addr(address)) => address,
+                    _ => 0,
+                }
+            } else {
+                unimplemented!();
+            };
 
-            for (i, raw) in raw_ranges.iter().enumerate() {
-                match raw {
-                    &gimli::RawRngListEntry::BaseAddress { addr: _ } => unimplemented!(),
-                    &gimli::RawRngListEntry::OffsetPair { begin: _, end: _ } => unimplemented!(),
-                    &gimli::RawRngListEntry::StartEnd { begin: _, end: _ } => unimplemented!(),
-                    &gimli::RawRngListEntry::StartLength {
-                        begin: _,
-                        length: _,
-                    } => unimplemented!(),
-                    _ => {
-                        return Err(traits::Error::with_msg(
-                            "AddressIndex not handled, should already have errored out",
-                        ))
-                    }
-                };
-            }
+            // Use a fallible iterator to fold the range entries into a sum.
+            let size: u64 = rnglists
+                .ranges(offset, version, addr_size, base_address)?
+                .map(|r| r.end - r.begin)
+                .fold(0, |res, size| res + size)?;
 
-            unimplemented!();
+            Ok(size)
         }
         _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
     }
