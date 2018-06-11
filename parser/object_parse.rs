@@ -152,12 +152,11 @@ where
 
         if let Some(kind) = item_kind(self) {
             let name_opt = item_name(self, debug_str)?;
-
             let new_ir_item = match kind {
-                ir::ItemKind::Code(_) => {
-                    // FIXUP: Figure out name for entities without a `DW_AT_name`.
+                ir::ItemKind::Code(_) => unimplemented!(),
+                ir::ItemKind::CompilationUnit(_) => {
                     let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
-                    let size = code_item_size(self, addr_size, version, rnglists)? as u32;
+                    let size = compilation_unit_size(self, addr_size, version, rnglists)? as u32;
                     ir::Item::new(id, name, size, kind)
                 }
                 ir::ItemKind::Data(_) => {
@@ -225,9 +224,10 @@ where
         // Program Scope Entries: (Chapter 3)
         // --------------------------------------------------------------------
         // Compilation units. (Section 3.1)
-        gimli::DW_TAG_compile_unit | gimli::DW_TAG_partial_unit | gimli::DW_TAG_imported_unit => {
-            unimplemented!()
-        }
+        gimli::DW_TAG_compile_unit
+        | gimli::DW_TAG_partial_unit
+        | gimli::DW_TAG_imported_unit
+        | gimli::DW_TAG_type_unit => Some(ir::CompilationUnit::new().into()),
         gimli::DW_TAG_skeleton_unit => unimplemented!(),
         // Module, namespace, and imported entries. (Section 3.2)
         gimli::DW_TAG_module => unimplemented!(),
@@ -335,34 +335,11 @@ where
         // TODO: Sort these remaining tags out.
         gimli::DW_TAG_dwarf_procedure => unimplemented!(),
         gimli::DW_TAG_template_type_parameter => unimplemented!(),
-        gimli::DW_TAG_type_unit => unimplemented!(),
         gimli::DW_TAG_generic_subrange => unimplemented!(),
         gimli::DW_TAG_lo_user => unimplemented!(),
         gimli::DW_TAG_hi_user => unimplemented!(),
         // Default case.   (FIXUP: Should this return a `ItemKind::Misc`?)
         gimli::DwTag(_) => None,
-    }
-}
-
-/// Find the size of an entity that has a machine code address, or a range of
-/// machine code addresses. This includes compilation units, module
-/// initialization, subroutines, lexical blocks, try/catch blocks (see Section
-/// 3.8 on page 93), labels, etc.
-///
-/// For more information about this, refer to Chapter 2.17 'Code Addresses,
-/// Ranges, and Base Addresses' (pg. 51) in the DWARF5 specification.
-fn code_item_size<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    addr_size: u8,
-    version: u16,
-    rnglists: &gimli::RangeLists<R>,
-) -> Result<u64, traits::Error>
-where
-    R: gimli::Reader,
-{
-    match item_low_pc(die)? {
-        Some(low_pc) => contiguous_code_item_size(die, low_pc, addr_size),
-        None => code_item_ranges_size(die, addr_size, version, rnglists),
     }
 }
 
@@ -383,29 +360,14 @@ where
     }
 }
 
-/// Find the value of `DW_AT_high_pc` for a DIE representing an entity with
-/// a contiguous range of machine code addresses. If there is not a
-/// `DW_AT_high_pc` value for an entry with a `DW_AT_low_pc` attribute, then the
-/// item only occupies a single address.
-fn contiguous_code_item_size<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    low_pc: u64,
-    addr_size: u8,
-) -> Result<u64, traits::Error>
-where
-    R: gimli::Reader,
-{
-    match die.attr_value(gimli::DW_AT_high_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => Ok(address - low_pc),
-        Some(gimli::AttributeValue::Udata(offset)) => Ok(offset),
-        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_high_pc value")),
-        None => Ok(addr_size as u64),
-    }
-}
-
-/// Find the total size of a compilation unit whose code occupies a
-/// non-contiguous range of addresses in an object file.
-fn code_item_ranges_size<R>(
+/// Find the size of an entity that has a machine code address, or a range of
+/// machine code addresses. This includes compilation units, module
+/// initialization, subroutines, lexical blocks, try/catch blocks (see Section
+/// 3.8 on page 93), labels, etc.
+///
+/// For more information about this, refer to Chapter 2.17 'Code Addresses,
+/// Ranges, and Base Addresses' (pg. 51) in the DWARF5 specification.
+fn compilation_unit_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     addr_size: u8,
     version: u16,
@@ -414,29 +376,33 @@ fn code_item_ranges_size<R>(
 where
     R: gimli::Reader,
 {
-    match die.attr_value(gimli::DW_AT_ranges)? {
-        Some(gimli::AttributeValue::RangeListsRef(offset)) => {
-            // FIXUP: This declaration of base_address feels super
-            // janky, and needs to be fixed by restructuring control flow above.
-            let base_address = if die.tag() == gimli::DW_TAG_compile_unit
-                || die.tag() == gimli::DW_TAG_type_unit
-            {
-                match die.attr_value(gimli::DW_AT_low_pc)? {
-                    Some(gimli::AttributeValue::Addr(address)) => address,
-                    _ => 0,
-                }
-            } else {
-                unimplemented!();
-            };
+    let base_addr: u64 = item_low_pc(die)?.ok_or(traits::Error::with_msg(
+        "Compilation unit missing DW_AT_low_pc attribute",
+    ))?;
 
-            // Use a fallible iterator to fold the range entries into a sum.
-            let size: u64 = rnglists
-                .ranges(offset, version, addr_size, base_address)?
-                .map(|r| r.end - r.begin)
-                .fold(0, |res, size| res + size)?;
-
-            Ok(size)
+    if let Some(high_pc_attr) = die.attr_value(gimli::DW_AT_high_pc)? {
+        match high_pc_attr {
+            gimli::AttributeValue::Addr(end_addr) => Ok(end_addr - base_addr),
+            gimli::AttributeValue::Udata(offset) => Ok(offset),
+            _ => Err(traits::Error::with_msg(
+                "Unexpected DW_AT_high_pc attribute value",
+            )),
         }
-        _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
+    } else if let Some(ranges_attr) = die.attr_value(gimli::DW_AT_ranges)? {
+        match ranges_attr {
+            gimli::AttributeValue::RangeListsRef(offset) => {
+                let size: u64 = rnglists
+                    .ranges(offset, version, addr_size, base_addr)?
+                    .map(|r| r.end - r.begin)
+                    .fold(0, |res, size| res + size)?;
+
+                Ok(size)
+            }
+            _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
+        }
+    } else {
+        Err(traits::Error::with_msg(
+            "Error calculating compilation unit size",
+        ))
     }
 }
