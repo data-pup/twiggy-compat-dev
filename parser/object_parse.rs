@@ -165,6 +165,7 @@ where
                 }
                 ir::ItemKind::Debug(_) => unimplemented!(),
                 ir::ItemKind::Misc(_) => unimplemented!(),
+                ir::ItemKind::Subroutine(_) => unimplemented!(),
             };
 
             items.add_item(new_ir_item);
@@ -230,7 +231,7 @@ where
         | gimli::DW_TAG_type_unit => Some(ir::CompilationUnit::new().into()),
         gimli::DW_TAG_skeleton_unit => unimplemented!(),
         // Module, namespace, and imported entries. (Section 3.2)
-        gimli::DW_TAG_module => unimplemented!(),
+        gimli::DW_TAG_module => Some(ir::Subroutine::new().into()),
         gimli::DW_TAG_namespace => unimplemented!(),
         gimli::DW_TAG_imported_module => unimplemented!(),
         gimli::DW_TAG_imported_declaration => unimplemented!(),
