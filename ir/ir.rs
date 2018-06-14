@@ -517,6 +517,9 @@ pub enum ItemKind {
     /// Miscellaneous item. Perhaps metadata. Perhaps something else.
     Misc(Misc),
 
+    /// Program scope. Modules, namespaces, imported declarations.
+    Scope(Scope),
+
     /// Subroutine item.
     Subroutine(Subroutine),
 }
@@ -548,6 +551,12 @@ impl From<DebugInfo> for ItemKind {
 impl From<Misc> for ItemKind {
     fn from(m: Misc) -> ItemKind {
         ItemKind::Misc(m)
+    }
+}
+
+impl From<Scope> for ItemKind {
+    fn from(s: Scope) -> ItemKind {
+        ItemKind::Scope(s)
     }
 }
 
@@ -697,12 +706,23 @@ impl Misc {
     }
 }
 
+/// Program scope. Modules, namespaces, imported declarations.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Scope;
+
+impl Scope {
+    /// Construct a new scope item.
+    pub fn new() -> Scope {
+        Scope
+    }
+}
+
 /// Compilation Unit.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Subroutine;
 
 impl Subroutine {
-    /// Construct a new compilation unit item.
+    /// Construct a new subroutine item.
     pub fn new() -> Subroutine {
         Subroutine
     }
