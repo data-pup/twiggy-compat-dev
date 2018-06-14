@@ -242,7 +242,7 @@ where
         | gimli::DW_TAG_inlined_subroutine
         | gimli::DW_TAG_entry_point => Some(ir::Subroutine::new().into()),
         // Label entries. (Section 3.6)
-        gimli::DW_TAG_label => unimplemented!(),
+        gimli::DW_TAG_label => Some(ir::Label::new().into()),
         // With statements. (Section 3.7)
         gimli::DW_TAG_with_stmt => unimplemented!(),
         // Data Object and Object List Entries: (Chapter 4)
