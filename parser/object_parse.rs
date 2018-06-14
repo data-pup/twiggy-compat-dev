@@ -235,11 +235,11 @@ where
         gimli::DW_TAG_module
         | gimli::DW_TAG_namespace
         | gimli::DW_TAG_imported_module
-        | gimli::DW_TAG_imported_declaration => Some(ir::Subroutine::new().into()),
+        | gimli::DW_TAG_imported_declaration => Some(ir::Scope::new().into()),
         // Subroutine and entry point entries. (Section 3.3)
-        gimli::DW_TAG_subprogram => unimplemented!(),
-        gimli::DW_TAG_inlined_subroutine => unimplemented!(),
-        gimli::DW_TAG_entry_point => unimplemented!(),
+        gimli::DW_TAG_subprogram
+        | gimli::DW_TAG_inlined_subroutine
+        | gimli::DW_TAG_entry_point => Some(ir::Subroutine::new().into()),
         // Label entries. (Section 3.6)
         gimli::DW_TAG_label => unimplemented!(),
         // With statements. (Section 3.7)
