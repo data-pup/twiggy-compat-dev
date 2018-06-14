@@ -231,10 +231,10 @@ where
         | gimli::DW_TAG_type_unit => Some(ir::CompilationUnit::new().into()),
         gimli::DW_TAG_skeleton_unit => unimplemented!(),
         // Module, namespace, and imported entries. (Section 3.2)
-        gimli::DW_TAG_module => Some(ir::Subroutine::new().into()),
-        gimli::DW_TAG_namespace => unimplemented!(),
-        gimli::DW_TAG_imported_module => unimplemented!(),
-        gimli::DW_TAG_imported_declaration => unimplemented!(),
+        gimli::DW_TAG_module
+        | gimli::DW_TAG_namespace
+        | gimli::DW_TAG_imported_module
+        | gimli::DW_TAG_imported_declaration => Some(ir::Subroutine::new().into()),
         // Subroutine and entry point entries. (Section 3.3)
         gimli::DW_TAG_subprogram => unimplemented!(),
         gimli::DW_TAG_inlined_subroutine => unimplemented!(),
