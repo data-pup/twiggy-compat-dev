@@ -164,6 +164,7 @@ where
                     unimplemented!();
                 }
                 ir::ItemKind::Debug(_) => unimplemented!(),
+                ir::ItemKind::Label(_) => unimplemented!(),
                 ir::ItemKind::Misc(_) => unimplemented!(),
                 ir::ItemKind::Scope(_) => unimplemented!(),
                 ir::ItemKind::Subroutine(_) => unimplemented!(),
