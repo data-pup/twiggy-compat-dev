@@ -150,7 +150,7 @@ where
     ) -> Result<(), traits::Error> {
         let (id, addr_size, version, debug_str, rnglists) = extra;
 
-        if let Some(kind) = item_kind(self) {
+        if let Some(kind) = item_kind(self)? {
             let name_opt = item_name(self, debug_str)?;
             let new_ir_item = match kind {
                 ir::ItemKind::Code(_) => unimplemented!(),
@@ -217,11 +217,11 @@ where
 
 /// Calculate the kind of IR item to represent the code or data associated with
 /// a given debugging information entry.
-pub fn item_kind<R>(die: &gimli::DebuggingInformationEntry<R, R::Offset>) -> Option<ir::ItemKind>
+pub fn item_kind<R>(die: &gimli::DebuggingInformationEntry<R, R::Offset>) -> Result<Option<ir::ItemKind>, traits::Error>
 where
     R: gimli::Reader,
 {
-    match die.tag() {
+    let item_kind = match die.tag() {
         gimli::DW_TAG_null => unimplemented!(),
 
         // Program Scope Entries: (Chapter 3)
@@ -343,7 +343,9 @@ where
         gimli::DW_TAG_hi_user => unimplemented!(),
         // Default case.   (FIXUP: Should this return a `ItemKind::Misc`?)
         gimli::DwTag(_) => None,
-    }
+    };
+
+    Ok(item_kind)
 }
 
 /// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
