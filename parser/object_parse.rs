@@ -36,6 +36,8 @@ impl<'input> Parse<'input> for object::File<'input> {
             Sect::from(gimli::EndianSlice::new(data_ref, endian))
         }
 
+        println!("Parsing file..."); // FIXUP: Debug print line.
+
         // Identify the file's endianty and create a typed arena to load sections.
         let arena = Arena::new();
         let endian = if self.is_little_endian() {
@@ -57,6 +59,7 @@ impl<'input> Parse<'input> for object::File<'input> {
         // Load the `.debug_info` section, and parse the items in each compilation unit.
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
+            println!("Calling parse on unit: {}", unit_id); // FIXUP: Debug print line.
             let extra = (unit_id, debug_abbrev, debug_str, rnglists);
             unit.parse_items(items, extra)?
         }
@@ -91,6 +94,8 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
+        println!("Parsing compilation unit..."); // FIXUP: Debug print line.
+
         let (unit_id, debug_abbrev, debug_str, rnglists) = extra;
 
         // Get the size of addresses in this type-unit.
@@ -149,6 +154,8 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
+        println!("Parsing DIE..."); // FIXUP: Debug print line.
+
         let (id, addr_size, version, debug_str, rnglists) = extra;
 
         if let Some(kind) = item_kind(self)? {
@@ -356,6 +363,8 @@ where
 /// DIE representing a data object or object list entry. Note that this is
 /// referring to the type, not the item kind, and returns the value of that
 /// entry's `DW_AT_name` attribute.
+///
+/// FIXUP: What type(s) is contained in the `DW_AT_type` attribute?
 fn item_type_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
 ) -> Result<Option<String>, traits::Error>
