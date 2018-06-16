@@ -114,8 +114,12 @@ where
         assert!(die_cursor.next_dfs().unwrap().is_some());
 
         // Parse the contained debugging information entries in depth-first order.
-        while let Some((depth, entry)) = die_cursor.next_dfs()? {
-            // Bail out of the loop when we return to the starting position.
+        let mut depth = 0;
+        while let Some((delta, entry)) = die_cursor.next_dfs()? {
+            // Update depth value, and break out of the loop when we
+            // return to the original starting position.
+            depth += delta;
+            assert!(depth >= 0);
             if depth <= 0 {
                 break;
             }
