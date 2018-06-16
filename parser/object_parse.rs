@@ -263,51 +263,53 @@ where
         gimli::DW_TAG_variable
         | gimli::DW_TAG_formal_parameter
         | gimli::DW_TAG_constant => {
-            let ty = item_type_name(&die)?;
-            Some(ir::Data::new(ty).into())
+            // FIXUP: This will return an offset into the current compilation unit.
+            // let ty = item_type_name(&die)?;
+            // Some(ir::Data::new(ty).into())
+            None
         }
         // Common block entries. (Section 4.2)
-        gimli::DW_TAG_common_block => unimplemented!(),
+        gimli::DW_TAG_common_block => None,
         // Namelist entries. (Section 4.3)
-        gimli::DW_TAG_namelist => unimplemented!(),
-        gimli::DW_TAG_namelist_item => unimplemented!(),
+        gimli::DW_TAG_namelist => None,
+        gimli::DW_TAG_namelist_item => None,
         // Type Entries: (Chapter 5)
         // --------------------------------------------------------------------
         // Base type entries. (Section 5.1)
-        gimli::DW_TAG_base_type => unimplemented!(),
+        gimli::DW_TAG_base_type => None,
         // Unspecified type entries. (Section 5.2)
-        gimli::DW_TAG_unspecified_type => unimplemented!(),
+        gimli::DW_TAG_unspecified_type => None,
         // Type modifier entries. (Section 5.3)
-        gimli::DW_TAG_atomic_type => unimplemented!(),
-        gimli::DW_TAG_const_type => unimplemented!(),
-        gimli::DW_TAG_immutable_type => unimplemented!(),
-        gimli::DW_TAG_packed_type => unimplemented!(),
-        gimli::DW_TAG_pointer_type => unimplemented!(),
-        gimli::DW_TAG_reference_type => unimplemented!(),
-        gimli::DW_TAG_restrict_type => unimplemented!(),
-        gimli::DW_TAG_rvalue_reference_type => unimplemented!(),
-        gimli::DW_TAG_shared_type => unimplemented!(),
-        gimli::DW_TAG_volatile_type => unimplemented!(),
+        gimli::DW_TAG_atomic_type => None,
+        gimli::DW_TAG_const_type => None,
+        gimli::DW_TAG_immutable_type => None,
+        gimli::DW_TAG_packed_type => None,
+        gimli::DW_TAG_pointer_type => None,
+        gimli::DW_TAG_reference_type => None,
+        gimli::DW_TAG_restrict_type => None,
+        gimli::DW_TAG_rvalue_reference_type => None,
+        gimli::DW_TAG_shared_type => None,
+        gimli::DW_TAG_volatile_type => None,
         // Typedef entries. (Section 5.4)
-        gimli::DW_TAG_typedef => unimplemented!(),
+        gimli::DW_TAG_typedef => None,
         // Array type entries. (Section 5.5)
-        gimli::DW_TAG_array_type => unimplemented!(),
+        gimli::DW_TAG_array_type => None,
         // Coarray type entries. (Section 5.6)
-        gimli::DW_TAG_coarray_type => unimplemented!(),
+        gimli::DW_TAG_coarray_type => None,
         // Structure, union, and class type entries. (Section 5.7.1)
-        gimli::DW_TAG_class_type => unimplemented!(),
-        gimli::DW_TAG_structure_type => unimplemented!(),
-        gimli::DW_TAG_union_type => unimplemented!(),
+        gimli::DW_TAG_class_type => None,
+        gimli::DW_TAG_structure_type => None,
+        gimli::DW_TAG_union_type => None,
         // Interface type entries. (Section 5.7.2)
-        gimli::DW_TAG_interface_type => unimplemented!(),
+        gimli::DW_TAG_interface_type => None,
         // Derived or extended structures, classes, and interfaces. (Section 5.7.3)
-        gimli::DW_TAG_inheritance => unimplemented!(),
+        gimli::DW_TAG_inheritance => None,
         // Access declarations. (Section 5.7.4)
-        gimli::DW_TAG_access_declaration => unimplemented!(),
+        gimli::DW_TAG_access_declaration => None,
         // Friend entries. (Section 5.7.5)
-        gimli::DW_TAG_friend => unimplemented!(),
+        gimli::DW_TAG_friend => None,
         // Data member entries. (Section 5.7.6)
-        gimli::DW_TAG_member => unimplemented!(),
+        gimli::DW_TAG_member => None,
         // Class variable entries. (Section 5.7.7)
         // FIXUP: This also seems to use `DW_TAG_variable`?
         // Member function entries. (Section 5.7.8)
@@ -316,46 +318,46 @@ where
         // FIXUP: This also uses `DW_TAG_class_type` `DW_TAG_structure_type`
         // and `DW_TAG_union_type`?
         // Variant entries. (Section 5.7.10)
-        gimli::DW_TAG_variant => unimplemented!(),
-        gimli::DW_TAG_variant_part => unimplemented!(),
+        gimli::DW_TAG_variant => None,
+        gimli::DW_TAG_variant_part => None,
         // Condition entries. (Section 5.8)
-        gimli::DW_TAG_condition => unimplemented!(),
+        gimli::DW_TAG_condition => None,
         // Enumeration entries. (Section 5.9)
-        gimli::DW_TAG_enumeration_type => unimplemented!(),
+        gimli::DW_TAG_enumeration_type => None,
         // Subroutine type entries. (Section 5.10)
-        gimli::DW_TAG_subroutine_type => unimplemented!(),
+        gimli::DW_TAG_subroutine_type => None,
         // String type entries. (Section 5.11)
-        gimli::DW_TAG_string_type => unimplemented!(),
+        gimli::DW_TAG_string_type => None,
         // Set type entries. (Section 5.12)
-        gimli::DW_TAG_set_type => unimplemented!(),
+        gimli::DW_TAG_set_type => None,
         // Subrange type entries. (Section 5.13)
-        gimli::DW_TAG_subrange_type => unimplemented!(),
+        gimli::DW_TAG_subrange_type => None,
         // Pointer to member type entries. (Section 5.14)
-        gimli::DW_TAG_ptr_to_member_type => unimplemented!(),
+        gimli::DW_TAG_ptr_to_member_type => None,
         // File type entries. (Section 5.15)
-        gimli::DW_TAG_file_type => unimplemented!(),
+        gimli::DW_TAG_file_type => None,
         // Dynamic type entries. (Section 5.16)
-        gimli::DW_TAG_dynamic_type => unimplemented!(),
+        gimli::DW_TAG_dynamic_type => None,
         // Template alias type entries. (Section 5.17)
-        gimli::DW_TAG_template_alias => unimplemented!(),
+        gimli::DW_TAG_template_alias => None,
         // Miscellaneous tags:
         // ------------------------------------------------------------------------
-        gimli::DW_TAG_lexical_block => unimplemented!(),
-        gimli::DW_TAG_try_block => unimplemented!(),
-        gimli::DW_TAG_catch_block => unimplemented!(),
-        gimli::DW_TAG_call_site => unimplemented!(),
-        gimli::DW_TAG_call_site_parameter => unimplemented!(),
-        gimli::DW_TAG_unspecified_parameters => unimplemented!(),
-        gimli::DW_TAG_common_inclusion => unimplemented!(),
-        gimli::DW_TAG_enumerator => unimplemented!(),
-        gimli::DW_TAG_template_value_parameter => unimplemented!(),
-        gimli::DW_TAG_thrown_type => unimplemented!(),
+        gimli::DW_TAG_lexical_block => None,
+        gimli::DW_TAG_try_block => None,
+        gimli::DW_TAG_catch_block => None,
+        gimli::DW_TAG_call_site => None,
+        gimli::DW_TAG_call_site_parameter => None,
+        gimli::DW_TAG_unspecified_parameters => None,
+        gimli::DW_TAG_common_inclusion => None,
+        gimli::DW_TAG_enumerator => None,
+        gimli::DW_TAG_template_value_parameter => None,
+        gimli::DW_TAG_thrown_type => None,
         // TODO: Sort these remaining tags out.
-        gimli::DW_TAG_dwarf_procedure => unimplemented!(),
-        gimli::DW_TAG_template_type_parameter => unimplemented!(),
-        gimli::DW_TAG_generic_subrange => unimplemented!(),
-        gimli::DW_TAG_lo_user => unimplemented!(),
-        gimli::DW_TAG_hi_user => unimplemented!(),
+        gimli::DW_TAG_dwarf_procedure => None,
+        gimli::DW_TAG_template_type_parameter => None,
+        gimli::DW_TAG_generic_subrange => None,
+        gimli::DW_TAG_lo_user => None,
+        gimli::DW_TAG_hi_user => None,
         // Default case.   (FIXUP: Should this return a `ItemKind::Misc`?)
         gimli::DwTag(_) => None,
     };
