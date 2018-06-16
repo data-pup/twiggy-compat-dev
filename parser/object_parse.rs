@@ -109,10 +109,14 @@ where
 
         let mut entry_id = 0; // Debugging information entry ID counter.
 
+        // Create an entries cursor, and move it to the root.
+        let mut die_cursor = self.entries(&abbrevs);
+        assert!(die_cursor.next_dfs().unwrap().is_some());
+
         // Parse the contained debugging information entries in depth-first order.
-        while let Some((depth, entry)) = self.entries(&abbrevs).next_dfs()? {
+        while let Some((depth, entry)) = die_cursor.next_dfs()? {
             // Bail out of the loop when we return to the starting position.
-            if depth >= 0 {
+            if depth <= 0 {
                 break;
             }
 
