@@ -248,9 +248,12 @@ where
         // Data Object and Object List Entries: (Chapter 4)
         // --------------------------------------------------------------------
         // Data object entries. (Section 4.1)
-        gimli::DW_TAG_variable => unimplemented!(),
-        gimli::DW_TAG_formal_parameter => unimplemented!(),
-        gimli::DW_TAG_constant => unimplemented!(),
+        gimli::DW_TAG_variable
+        | gimli::DW_TAG_formal_parameter
+        | gimli::DW_TAG_constant => {
+            let ty = item_type_name(&die)?;
+            Some(ir::Data::new(ty).into())
+        }
         // Common block entries. (Section 4.2)
         gimli::DW_TAG_common_block => unimplemented!(),
         // Namelist entries. (Section 4.3)
@@ -346,6 +349,26 @@ where
     };
 
     Ok(item_kind)
+}
+
+/// Find the name of the entry referenced by the `DW_AT_type` attribute for a
+/// DIE representing a data object or object list entry. Note that this is
+/// referring to the type, not the item kind, and returns the value of that
+/// entry's `DW_AT_name` attribute.
+fn item_type_name<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<Option<String>, traits::Error>
+where
+    R: gimli::Reader,
+{
+    if let Some(type_attr) = die.attr_value(gimli::DW_AT_type)? {
+        match type_attr {
+            gimli::AttributeValue::DebugTypesRef(_) => unimplemented!(),
+            _ => Err(traits::Error::with_msg("Unexpected type encoding")),
+        }
+    } else {
+        Ok(None)
+    }
 }
 
 /// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
