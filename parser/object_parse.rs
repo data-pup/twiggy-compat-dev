@@ -58,7 +58,8 @@ impl<'input> Parse<'input> for object::File<'input> {
 
         // Load the `.debug_info` section, and parse the items in each compilation unit.
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
-        while let Some((unit_id, unit)) = debug_info.units().enumerate().next()? {
+        let mut compilation_units = debug_info.units().enumerate();
+        while let Some((unit_id, unit)) = compilation_units.next()? {
             println!("Calling parse on unit: {}", unit_id); // FIXUP: Debug print line.
             let extra = (unit_id, debug_abbrev, debug_str, rnglists);
             unit.parse_items(items, extra)?
