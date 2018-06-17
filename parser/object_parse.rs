@@ -168,25 +168,31 @@ where
 
         if let Some(kind) = item_kind(self)? {
             let name_opt = item_name(self, debug_str)?;
-            let new_ir_item = match kind {
-                ir::ItemKind::Code(_) => unimplemented!(),
+            // FIXUP: This will eventually result in a plain `ir::Item` object,
+            // returning an Option for now so I can develop incrementally.
+            let new_ir_item: Option<ir::Item> = match kind {
+                ir::ItemKind::Code(_) => None,
                 ir::ItemKind::CompilationUnit(_) => {
                     let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
                     let size = compilation_unit_size(self, addr_size, version, rnglists)? as u32;
-                    ir::Item::new(id, name, size, kind)
+                    Some(ir::Item::new(id, name, size, kind))
                 }
                 ir::ItemKind::Data(_) => {
-                    let _location = self.attr_value(gimli::DW_AT_location)?;
-                    unimplemented!();
+                    // let _location = self.attr_value(gimli::DW_AT_location)?;
+                    // unimplemented!();
+                    None
                 }
-                ir::ItemKind::Debug(_) => unimplemented!(),
-                ir::ItemKind::Label(_) => unimplemented!(),
-                ir::ItemKind::Misc(_) => unimplemented!(),
-                ir::ItemKind::Scope(_) => unimplemented!(),
-                ir::ItemKind::Subroutine(_) => unimplemented!(),
+                ir::ItemKind::Debug(_) => None,
+                ir::ItemKind::Label(_) => None,
+                ir::ItemKind::Misc(_) => None,
+                ir::ItemKind::Scope(_) => None,
+                ir::ItemKind::Subroutine(_) => None,
             };
 
-            items.add_item(new_ir_item);
+            // FIXUP: See above note, unwrapping will not always be needed.
+            if let Some(item) = new_ir_item {
+                items.add_item(item);
+            }
         }
 
         Ok(())
