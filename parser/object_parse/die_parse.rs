@@ -1,8 +1,9 @@
-use fallible_iterator::FallibleIterator;
 use gimli;
 use ir;
 use traits;
 
+use super::die_ir_item_name::item_name;
+use super::die_ir_item_size::compilation_unit_size;
 use super::Parse;
 
 impl<'abbrev, 'unit, R> Parse<'unit>
@@ -67,34 +68,6 @@ where
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
         unimplemented!();
-    }
-}
-
-/// Calculate the item's name. For more information about this, refer to Section 2.15 of
-/// the DWARF v5 specification: 'Identifier Names'. Any DIE associated representing an
-/// entity that has been given a name may have a `DW_AT_name` attribute. If there was
-/// not a name assigned to the entity in the source code, the attribute may either not
-/// exist, or be a single null byte.
-pub fn item_name<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    debug_str: &gimli::DebugStr<R>,
-) -> Result<Option<String>, traits::Error>
-where
-    R: gimli::Reader,
-{
-    match die
-        .attr(gimli::DW_AT_name)?
-        .and_then(|attr| attr.string_value(&debug_str))
-    {
-        Some(s) => {
-            let name = Some(
-                s
-                    .to_string()? // This `to_string()` creates a `Result<Cow<'_, str>, _>`.
-                    .to_string(), // This `to_string()` creates the String we return.
-            );
-            Ok(name)
-        }
-        None => Ok(None),
     }
 }
 
@@ -259,69 +232,5 @@ where
         }
     } else {
         Ok(None)
-    }
-}
-
-/// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
-/// a contiguous range of machine code addresses. If there is not a
-/// `DW_AT_low_pc` value, then the addresses are not contiguous, and
-/// `DW_AT_ranges` should be used instead.
-fn item_low_pc<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-) -> Result<Option<u64>, traits::Error>
-where
-    R: gimli::Reader,
-{
-    match die.attr_value(gimli::DW_AT_low_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
-        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
-        None => Ok(None),
-    }
-}
-
-/// Find the size of an entity that has a machine code address, or a range of
-/// machine code addresses. This includes compilation units, module
-/// initialization, subroutines, lexical blocks, try/catch blocks (see Section
-/// 3.8 on page 93), labels, etc.
-///
-/// For more information about this, refer to Chapter 2.17 'Code Addresses,
-/// Ranges, and Base Addresses' (pg. 51) in the DWARF5 specification.
-fn compilation_unit_size<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    addr_size: u8,
-    version: u16,
-    rnglists: &gimli::RangeLists<R>,
-) -> Result<u64, traits::Error>
-where
-    R: gimli::Reader,
-{
-    let base_addr: u64 = item_low_pc(die)?.ok_or(traits::Error::with_msg(
-        "Compilation unit missing DW_AT_low_pc attribute",
-    ))?;
-
-    if let Some(high_pc_attr) = die.attr_value(gimli::DW_AT_high_pc)? {
-        match high_pc_attr {
-            gimli::AttributeValue::Addr(end_addr) => Ok(end_addr - base_addr),
-            gimli::AttributeValue::Udata(offset) => Ok(offset),
-            _ => Err(traits::Error::with_msg(
-                "Unexpected DW_AT_high_pc attribute value",
-            )),
-        }
-    } else if let Some(ranges_attr) = die.attr_value(gimli::DW_AT_ranges)? {
-        match ranges_attr {
-            gimli::AttributeValue::RangeListsRef(offset) => {
-                let size: u64 = rnglists
-                    .ranges(offset, version, addr_size, base_addr)?
-                    .map(|r| r.end - r.begin)
-                    .fold(0, |res, size| res + size)?;
-
-                Ok(size)
-            }
-            _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
-        }
-    } else {
-        Err(traits::Error::with_msg(
-            "Error calculating compilation unit size",
-        ))
     }
 }
