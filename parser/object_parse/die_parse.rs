@@ -3,7 +3,7 @@ use ir;
 use traits;
 
 use super::die_ir_item_name::item_name;
-use super::die_ir_item_size::compilation_unit_size;
+// use super::die_ir_item_size::compilation_unit_size;
 use super::Parse;
 
 impl<'abbrev, 'unit, R> Parse<'unit>
@@ -35,9 +35,11 @@ where
             let new_ir_item: Option<ir::Item> = match kind {
                 ir::ItemKind::Code(_) => None,
                 ir::ItemKind::CompilationUnit(_) => {
-                    let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
-                    let size = compilation_unit_size(self, addr_size, version, rnglists)? as u32;
-                    Some(ir::Item::new(id, name, size, kind))
+                    unimplemented!();
+                    // FIXUP: This item kind should not end up occurring here.
+                    // let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
+                    // let size = compilation_unit_size(self, addr_size, version, rnglists)? as u32;
+                    // Some(ir::Item::new(id, name, size, kind))
                 }
                 ir::ItemKind::Data(_) => {
                     // let _location = self.attr_value(gimli::DW_AT_location)?;

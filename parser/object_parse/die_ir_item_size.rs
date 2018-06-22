@@ -18,9 +18,14 @@ pub fn compilation_unit_size<R>(
 where
     R: gimli::Reader,
 {
-    let base_addr: u64 = die_low_pc_value(die)?.ok_or(traits::Error::with_msg(
-        "Compilation unit missing DW_AT_low_pc attribute",
-    ))?;
+    let base_addr = match die
+        .attr_value(gimli::DW_AT_low_pc)?
+        .ok_or(traits::Error::with_msg(
+            "Compilation unit missing DW_AT_low_pc value",
+        ))? {
+        gimli::AttributeValue::Addr(address) => Ok(address),
+        _ => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
+    }?;
 
     if let Some(high_pc_attr) = die.attr_value(gimli::DW_AT_high_pc)? {
         match high_pc_attr {
