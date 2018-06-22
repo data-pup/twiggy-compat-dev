@@ -13,7 +13,7 @@ extern crate twiggy_ir as ir;
 extern crate twiggy_traits as traits;
 
 mod object_parse;
-mod wasm;
+mod wasm_parse;
 
 use parity_wasm::elements;
 use std::fs;
