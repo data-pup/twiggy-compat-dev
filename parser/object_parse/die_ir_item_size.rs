@@ -58,7 +58,7 @@ where
 /// a contiguous range of machine code addresses. If there is not a
 /// `DW_AT_low_pc` value, then the addresses are not contiguous, and
 /// `DW_AT_ranges` should be used instead.
-fn die_low_pc_value<R>(
+fn _die_low_pc_value<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
 ) -> Result<Option<u64>, traits::Error>
 where

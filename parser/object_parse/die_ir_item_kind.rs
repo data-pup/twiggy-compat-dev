@@ -1,4 +1,3 @@
-use fallible_iterator::FallibleIterator;
 use gimli;
 use ir;
 use traits;
@@ -40,7 +39,7 @@ where
         // Data object entries. (Section 4.1)
         gimli::DW_TAG_variable | gimli::DW_TAG_formal_parameter | gimli::DW_TAG_constant => {
             // FIXUP: This will return an offset into the current compilation unit.
-            // let ty = item_type_name(&die)?;
+            let _ty = type_name(&die)?;
             // Some(ir::Data::new(ty).into())
             None
         }
@@ -147,7 +146,7 @@ where
 /// entry's `DW_AT_name` attribute.
 ///
 /// FIXUP: What type(s) is contained in the `DW_AT_type` attribute?
-fn item_type_name<R>(
+fn type_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
 ) -> Result<Option<String>, traits::Error>
 where
