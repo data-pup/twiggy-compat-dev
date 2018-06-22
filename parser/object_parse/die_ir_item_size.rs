@@ -2,23 +2,6 @@ use fallible_iterator::FallibleIterator;
 use gimli;
 use traits;
 
-/// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
-/// a contiguous range of machine code addresses. If there is not a
-/// `DW_AT_low_pc` value, then the addresses are not contiguous, and
-/// `DW_AT_ranges` should be used instead.
-fn item_low_pc<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-) -> Result<Option<u64>, traits::Error>
-where
-    R: gimli::Reader,
-{
-    match die.attr_value(gimli::DW_AT_low_pc)? {
-        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
-        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
-        None => Ok(None),
-    }
-}
-
 /// Find the size of an entity that has a machine code address, or a range of
 /// machine code addresses. This includes compilation units, module
 /// initialization, subroutines, lexical blocks, try/catch blocks (see Section
@@ -35,7 +18,7 @@ pub fn compilation_unit_size<R>(
 where
     R: gimli::Reader,
 {
-    let base_addr: u64 = item_low_pc(die)?.ok_or(traits::Error::with_msg(
+    let base_addr: u64 = die_low_pc_value(die)?.ok_or(traits::Error::with_msg(
         "Compilation unit missing DW_AT_low_pc attribute",
     ))?;
 
@@ -63,5 +46,22 @@ where
         Err(traits::Error::with_msg(
             "Error calculating compilation unit size",
         ))
+    }
+}
+
+/// Find the value of the `DW_AT_low_pc` for a DIE representing an entity with
+/// a contiguous range of machine code addresses. If there is not a
+/// `DW_AT_low_pc` value, then the addresses are not contiguous, and
+/// `DW_AT_ranges` should be used instead.
+fn die_low_pc_value<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<Option<u64>, traits::Error>
+where
+    R: gimli::Reader,
+{
+    match die.attr_value(gimli::DW_AT_low_pc)? {
+        Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
+        Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
+        None => Ok(None),
     }
 }
