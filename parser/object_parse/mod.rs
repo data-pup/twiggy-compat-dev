@@ -1,5 +1,5 @@
 use super::Parse;
 
-mod parse_compilation_unit;
-mod parse_die;
-mod parse_file;
+mod compilation_unit_parse;
+mod die_parse;
+mod file_parse;
