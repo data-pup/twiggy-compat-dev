@@ -36,7 +36,6 @@ where
             let new_ir_item: Option<ir::Item> = match kind {
                 ir::ItemKind::Code(_) => None,
                 ir::ItemKind::CompilationUnit(_) => {
-                    unimplemented!();
                     // FIXUP: This item kind should not end up occurring here.
                     let name = name_opt.unwrap_or(format!("Code[{:?}]", id));
                     let size = compilation_unit_size(self, addr_size, version, rnglists)? as u32;
