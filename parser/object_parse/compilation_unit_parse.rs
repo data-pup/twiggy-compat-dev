@@ -22,20 +22,19 @@ where
     ) -> Result<(), traits::Error> {
         println!("Parsing compilation unit..."); // FIXUP: Debug print line.
 
+        // Destructure the extra information needed to parse items in the unit.
         let (unit_id, debug_abbrev, debug_str, rnglists) = extra;
 
-        // Get the size of addresses in this type-unit.
+        // Get the size of addresses in this type-unit, initialize an entry ID counter.
         let addr_size: u8 = self.address_size();
         let version: u16 = self.version();
+        let mut entry_id = 0;
 
         // Find the abbreviations associated with this compilation unit.
+        // Use the abbreviations to create an entries cursor, and move it to the root.
         let abbrevs = self
             .abbreviations(&debug_abbrev)
             .expect("Could not find abbreviations");
-
-        let mut entry_id = 0; // Debugging information entry ID counter.
-
-        // Create an entries cursor, and move it to the root.
         let mut die_cursor = self.entries(&abbrevs);
         assert!(die_cursor.next_dfs().unwrap().is_some());
 
