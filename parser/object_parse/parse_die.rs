@@ -100,7 +100,9 @@ where
 
 /// Calculate the kind of IR item to represent the code or data associated with
 /// a given debugging information entry.
-pub fn item_kind<R>(die: &gimli::DebuggingInformationEntry<R, R::Offset>) -> Result<Option<ir::ItemKind>, traits::Error>
+pub fn item_kind<R>(
+    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+) -> Result<Option<ir::ItemKind>, traits::Error>
 where
     R: gimli::Reader,
 {
@@ -121,9 +123,9 @@ where
         | gimli::DW_TAG_imported_module
         | gimli::DW_TAG_imported_declaration => Some(ir::Scope::new().into()),
         // Subroutine and entry point entries. (Section 3.3)
-        gimli::DW_TAG_subprogram
-        | gimli::DW_TAG_inlined_subroutine
-        | gimli::DW_TAG_entry_point => Some(ir::Subroutine::new().into()),
+        gimli::DW_TAG_subprogram | gimli::DW_TAG_inlined_subroutine | gimli::DW_TAG_entry_point => {
+            Some(ir::Subroutine::new().into())
+        }
         // Label entries. (Section 3.6)
         gimli::DW_TAG_label => Some(ir::Label::new().into()),
         // With statements. (Section 3.7)
@@ -131,9 +133,7 @@ where
         // Data Object and Object List Entries: (Chapter 4)
         // --------------------------------------------------------------------
         // Data object entries. (Section 4.1)
-        gimli::DW_TAG_variable
-        | gimli::DW_TAG_formal_parameter
-        | gimli::DW_TAG_constant => {
+        gimli::DW_TAG_variable | gimli::DW_TAG_formal_parameter | gimli::DW_TAG_constant => {
             // FIXUP: This will return an offset into the current compilation unit.
             // let ty = item_type_name(&die)?;
             // Some(ir::Data::new(ty).into())
@@ -252,7 +252,10 @@ where
         match type_attr {
             gimli::AttributeValue::DebugTypesRef(_) => unimplemented!(),
             gimli::AttributeValue::UnitRef(_) => unimplemented!(),
-            _ => Err(traits::Error::with_msg(format!("Unexpected type encoding, found type: {:?}", type_attr))),
+            _ => Err(traits::Error::with_msg(format!(
+                "Unexpected type encoding, found type: {:?}",
+                type_attr
+            ))),
         }
     } else {
         Ok(None)
