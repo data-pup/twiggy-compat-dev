@@ -504,9 +504,6 @@ pub enum ItemKind {
     /// Executable code. Function bodies.
     Code(Code),
 
-    /// Compilation Unit.
-    CompilationUnit(CompilationUnit),
-
     /// Data inside the binary that may or may not end up loaded into memory
     /// with the executable code.
     Data(Data),
@@ -530,12 +527,6 @@ pub enum ItemKind {
 impl From<Code> for ItemKind {
     fn from(c: Code) -> ItemKind {
         ItemKind::Code(c)
-    }
-}
-
-impl From<CompilationUnit> for ItemKind {
-    fn from(u: CompilationUnit) -> ItemKind {
-        ItemKind::CompilationUnit(u)
     }
 }
 
@@ -665,17 +656,6 @@ impl Code {
         // And now we say that the generic function is the thing proceeding the
         // '<'. Good enough!
         Some(demangled[..open_bracket].to_string())
-    }
-}
-
-/// Compilation Unit.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct CompilationUnit;
-
-impl CompilationUnit {
-    /// Construct a new compilation unit item.
-    pub fn new() -> CompilationUnit {
-        CompilationUnit
     }
 }
 
