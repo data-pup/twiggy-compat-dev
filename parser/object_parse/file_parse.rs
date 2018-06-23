@@ -7,6 +7,7 @@ use object::{self, Object};
 use traits;
 use typed_arena::Arena;
 
+use super::compilation_unit_parse::CompUnitItemsExtra;
 use super::Parse;
 
 impl<'input> Parse<'input> for object::File<'input> {
@@ -61,7 +62,12 @@ impl<'input> Parse<'input> for object::File<'input> {
         let mut compilation_units = debug_info.units().enumerate();
         while let Some((unit_id, unit)) = compilation_units.next()? {
             println!("Calling parse on unit: {}", unit_id); // FIXUP: Debug print line.
-            let extra = (unit_id, debug_abbrev, debug_str, rnglists);
+            let extra = CompUnitItemsExtra {
+                unit_id,
+                debug_abbrev,
+                debug_str,
+                rnglists,
+            };
             unit.parse_items(items, extra)?
         }
 

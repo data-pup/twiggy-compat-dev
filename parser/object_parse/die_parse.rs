@@ -9,8 +9,7 @@ use super::Parse;
 
 pub struct DIEItemsExtra<'unit, R>
 where
-    R: gimli::Reader,
-    R: 'unit,
+    R: 'unit + gimli::Reader,
 {
     pub ir_id: ir::Id,
     pub addr_size: u8,
@@ -34,7 +33,6 @@ where
     ) -> Result<(), traits::Error> {
         println!("Parsing DIE..."); // FIXUP: Debug print line.
 
-        // let (_id, _addr_size, _version, debug_str, _rnglists, _comp_unit) = extra;
         let Self::ItemsExtra {
             ir_id,
             addr_size,
