@@ -16,11 +16,12 @@ where
         // Program Scope Entries: (Chapter 3)
         // --------------------------------------------------------------------
         // Compilation units. (Section 3.1)
+        // These are disregarded, and not represented in the twiggy IR.
         gimli::DW_TAG_compile_unit
         | gimli::DW_TAG_partial_unit
         | gimli::DW_TAG_imported_unit
-        | gimli::DW_TAG_type_unit => None,
-        gimli::DW_TAG_skeleton_unit => unimplemented!(),
+        | gimli::DW_TAG_type_unit
+        | gimli::DW_TAG_skeleton_unit => unimplemented!(),
         // Module, namespace, and imported entries. (Section 3.2)
         gimli::DW_TAG_module
         | gimli::DW_TAG_namespace
@@ -44,10 +45,10 @@ where
             None
         }
         // Common block entries. (Section 4.2)
-        gimli::DW_TAG_common_block => None,
+        gimli::DW_TAG_common_block => unimplemented!(),
         // Namelist entries. (Section 4.3)
-        gimli::DW_TAG_namelist => None,
-        gimli::DW_TAG_namelist_item => None,
+        gimli::DW_TAG_namelist => unimplemented!(),
+        gimli::DW_TAG_namelist_item => unimplemented!(),
         // Type Entries: (Chapter 5)
         // --------------------------------------------------------------------
         // Base type entries. (Section 5.1)
