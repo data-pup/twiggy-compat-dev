@@ -4,8 +4,10 @@ use traits;
 
 use super::die_ir_item_kind::item_kind;
 use super::die_ir_item_name::item_name;
-use super::die_ir_item_size::compilation_unit_size;
 use super::Parse;
+
+// FIXUP: Not using this function as is.
+// use super::die_ir_item_size::compilation_unit_size;
 
 pub struct DIEItemsExtra<'unit, R>
 where
@@ -35,17 +37,17 @@ where
         println!("Parsing DIE..."); // FIXUP: Debug print line.
 
         let Self::ItemsExtra {
-            ir_id,
-            addr_size,
-            dwarf_version,
+            ir_id: _,
+            addr_size: _,
+            dwarf_version: _,
             debug_str,
             debug_types,
-            rnglists,
+            rnglists: _,
             comp_unit,
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let name_opt = item_name(self, debug_str)?;
+            let _name_opt = item_name(self, debug_str)?;
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {

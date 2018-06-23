@@ -9,7 +9,7 @@ use traits;
 ///
 /// For more information about this, refer to Chapter 2.17 'Code Addresses,
 /// Ranges, and Base Addresses' (pg. 51) in the DWARF5 specification.
-pub fn compilation_unit_size<R>(
+pub fn _compilation_unit_size<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     addr_size: u8,
     version: u16,
