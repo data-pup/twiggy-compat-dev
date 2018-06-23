@@ -159,8 +159,12 @@ where
 {
     if let Some(type_attr) = die.attr_value(gimli::DW_AT_type)? {
         match type_attr {
-            gimli::AttributeValue::DebugTypesRef(_) => unimplemented!(),
-            gimli::AttributeValue::UnitRef(_) => unimplemented!(),
+            gimli::AttributeValue::DebugTypesRef(_) => {
+                unimplemented!();
+            }
+            gimli::AttributeValue::UnitRef(_) => {
+                unimplemented!();
+            }
             _ => Err(traits::Error::with_msg(format!(
                 "Unexpected type encoding, found type: {:?}",
                 type_attr
