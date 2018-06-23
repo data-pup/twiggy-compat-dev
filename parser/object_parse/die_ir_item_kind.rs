@@ -19,7 +19,7 @@ where
         gimli::DW_TAG_compile_unit
         | gimli::DW_TAG_partial_unit
         | gimli::DW_TAG_imported_unit
-        | gimli::DW_TAG_type_unit => Some(ir::CompilationUnit::new().into()),
+        | gimli::DW_TAG_type_unit => None,
         gimli::DW_TAG_skeleton_unit => unimplemented!(),
         // Module, namespace, and imported entries. (Section 3.2)
         gimli::DW_TAG_module
