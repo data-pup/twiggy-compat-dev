@@ -5,16 +5,21 @@ use traits;
 use super::die_parse::DIEItemsExtra;
 use super::Parse;
 
+pub struct CompUnitItemsExtra<'input, R>
+where
+    R: 'input + gimli::Reader,
+{
+    pub unit_id: usize,
+    pub debug_abbrev: gimli::DebugAbbrev<R>,
+    pub debug_str: gimli::DebugStr<R>,
+    pub rnglists: &'input gimli::RangeLists<R>,
+}
+
 impl<'input, R> Parse<'input> for gimli::CompilationUnitHeader<R, R::Offset>
 where
     R: 'input + gimli::Reader,
 {
-    type ItemsExtra = (
-        usize,
-        gimli::DebugAbbrev<R>,
-        gimli::DebugStr<R>,
-        &'input gimli::RangeLists<R>,
-    );
+    type ItemsExtra = CompUnitItemsExtra<'input, R>;
 
     fn parse_items(
         &self,
@@ -24,7 +29,12 @@ where
         println!("Parsing compilation unit..."); // FIXUP: Debug print line.
 
         // Destructure the extra information needed to parse items in the unit.
-        let (unit_id, debug_abbrev, debug_str, rnglists) = extra;
+        let Self::ItemsExtra {
+            unit_id,
+            debug_abbrev,
+            debug_str,
+            rnglists,
+        } = extra;
 
         // Get the size of addresses in this type-unit, initialize an entry ID counter.
         let addr_size: u8 = self.address_size();
