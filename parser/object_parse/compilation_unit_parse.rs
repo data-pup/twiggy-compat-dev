@@ -2,6 +2,7 @@ use gimli;
 use ir;
 use traits;
 
+use super::die_parse::DIEItemsExtra;
 use super::Parse;
 
 impl<'input, R> Parse<'input> for gimli::CompilationUnitHeader<R, R::Offset>
@@ -27,7 +28,7 @@ where
 
         // Get the size of addresses in this type-unit, initialize an entry ID counter.
         let addr_size: u8 = self.address_size();
-        let version: u16 = self.version();
+        let dwarf_version: u16 = self.version();
         let mut entry_id = 0;
 
         // Find the abbreviations associated with this compilation unit.
@@ -49,8 +50,15 @@ where
                 break;
             }
 
-            let id = ir::Id::entry(unit_id, entry_id);
-            let die_extra = (id, addr_size, version, &debug_str, rnglists, self);
+            let ir_id = ir::Id::entry(unit_id, entry_id);
+            let die_extra = DIEItemsExtra {
+                ir_id,
+                addr_size,
+                dwarf_version,
+                debug_str: &debug_str,
+                rnglists,
+                comp_unit: self,
+            };
             entry.parse_items(items, die_extra)?;
             entry_id += 1;
         }
