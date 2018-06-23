@@ -50,7 +50,7 @@ where
             }
 
             let id = ir::Id::entry(unit_id, entry_id);
-            let die_extra = (id, addr_size, version, &debug_str, rnglists);
+            let die_extra = (id, addr_size, version, &debug_str, rnglists, self);
             entry.parse_items(items, die_extra)?;
             entry_id += 1;
         }

@@ -18,6 +18,7 @@ where
         u16,
         &'unit gimli::DebugStr<R>,
         &'unit gimli::RangeLists<R>,
+        &'unit gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
     );
 
     fn parse_items(
@@ -27,7 +28,7 @@ where
     ) -> Result<(), traits::Error> {
         println!("Parsing DIE..."); // FIXUP: Debug print line.
 
-        let (_id, _addr_size, _version, debug_str, _rnglists) = extra;
+        let (_id, _addr_size, _version, debug_str, _rnglists, _comp_unit) = extra;
 
         if let Some(kind) = item_kind(self)? {
             let name_opt = item_name(self, debug_str)?;
