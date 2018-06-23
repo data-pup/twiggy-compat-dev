@@ -15,6 +15,7 @@ where
     pub addr_size: u8,
     pub dwarf_version: u16,
     pub debug_str: &'unit gimli::DebugStr<R>,
+    pub debug_types: &'unit gimli::DebugTypes<R>,
     pub rnglists: &'unit gimli::RangeLists<R>,
     pub comp_unit: &'unit gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
 }
@@ -38,11 +39,12 @@ where
             addr_size,
             dwarf_version,
             debug_str,
+            debug_types,
             rnglists,
             comp_unit,
         } = extra;
 
-        if let Some(kind) = item_kind(self)? {
+        if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
             let name_opt = item_name(self, debug_str)?;
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
