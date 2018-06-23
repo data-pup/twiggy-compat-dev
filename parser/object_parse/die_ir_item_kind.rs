@@ -6,6 +6,8 @@ use traits;
 /// a given debugging information entry.
 pub fn item_kind<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    debug_types: &gimli::DebugTypes<R>,
+    compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
 ) -> Result<Option<ir::ItemKind>, traits::Error>
 where
     R: gimli::Reader,
@@ -40,7 +42,7 @@ where
         // Data object entries. (Section 4.1)
         gimli::DW_TAG_variable | gimli::DW_TAG_formal_parameter | gimli::DW_TAG_constant => {
             // FIXUP: This will return an offset into the current compilation unit.
-            let _ty = type_name(&die)?;
+            let _ty = type_name(&die, debug_types, compilation_unit)?;
             // Some(ir::Data::new(ty).into())
             None
         }
@@ -149,6 +151,8 @@ where
 /// FIXUP: What type(s) is contained in the `DW_AT_type` attribute?
 fn type_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    _debug_types: &gimli::DebugTypes<R>,
+    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
 ) -> Result<Option<String>, traits::Error>
 where
     R: gimli::Reader,
