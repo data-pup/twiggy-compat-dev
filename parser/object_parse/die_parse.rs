@@ -25,14 +25,6 @@ impl<'abbrev, 'unit, R> Parse<'unit>
 where
     R: gimli::Reader,
 {
-    // type ItemsExtra = (
-    //     ir::Id,
-    //     u8,
-    //     u16,
-    //     &'unit gimli::DebugStr<R>,
-    //     &'unit gimli::RangeLists<R>,
-    //     &'unit gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
-    // );
     type ItemsExtra = DIEItemsExtra<'unit, R>;
 
     fn parse_items(
