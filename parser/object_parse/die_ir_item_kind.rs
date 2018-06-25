@@ -6,8 +6,8 @@ use traits;
 /// a given debugging information entry.
 pub fn item_kind<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    debug_types: &gimli::DebugTypes<R>,
-    compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
+    _debug_types: &gimli::DebugTypes<R>,
+    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
 ) -> Result<Option<ir::ItemKind>, traits::Error>
 where
     R: gimli::Reader,
@@ -41,10 +41,9 @@ where
         // --------------------------------------------------------------------
         // Data object entries. (Section 4.1)
         gimli::DW_TAG_variable | gimli::DW_TAG_formal_parameter | gimli::DW_TAG_constant => {
-            // FIXUP: This will return an offset into the current compilation unit.
-            let _ty = type_name(&die, debug_types, compilation_unit)?;
-            // Some(ir::Data::new(ty).into())
-            None
+            // let ty = type_name(&die, debug_types, compilation_unit)?;
+            let ty = Some("VARIABLE".to_string()); // FIXUP.
+            Some(ir::Data::new(ty).into())
         }
         // Common block entries. (Section 4.2)
         gimli::DW_TAG_common_block => unimplemented!(),
@@ -149,7 +148,7 @@ where
 /// entry's `DW_AT_name` attribute.
 ///
 /// FIXUP: What type(s) is contained in the `DW_AT_type` attribute?
-fn type_name<R>(
+fn _type_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _debug_types: &gimli::DebugTypes<R>,
     _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
