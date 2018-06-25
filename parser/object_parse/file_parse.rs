@@ -82,6 +82,7 @@ impl<'input> Parse<'input> for object::File<'input> {
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        unimplemented!();
+        // unimplemented!();
+        Ok(())
     }
 }

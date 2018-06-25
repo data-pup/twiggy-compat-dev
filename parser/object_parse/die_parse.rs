@@ -37,7 +37,7 @@ where
         println!("Parsing DIE..."); // FIXUP: Debug print line.
 
         let Self::ItemsExtra {
-            ir_id: _,
+            ir_id,
             addr_size: _,
             dwarf_version: _,
             debug_str,
@@ -47,7 +47,7 @@ where
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let _name_opt = item_name(self, debug_str)?;
+            let name_attr = item_name(self, debug_str)?;
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {
@@ -55,7 +55,8 @@ where
                 ir::ItemKind::Data(_) => {
                     // let _location = self.attr_value(gimli::DW_AT_location)?;
                     // unimplemented!();
-                    None
+                    let ir_name = name_attr.unwrap_or("DATA".to_string());
+                    Some(ir::Item::new(ir_id, ir_name, 1, kind))
                 }
                 ir::ItemKind::Debug(_) => None,
                 ir::ItemKind::Label(_) => None,
