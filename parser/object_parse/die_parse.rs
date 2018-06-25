@@ -54,15 +54,24 @@ where
                 ir::ItemKind::Code(_) => None,
                 ir::ItemKind::Data(_) => {
                     // let _location = self.attr_value(gimli::DW_AT_location)?;
-                    // unimplemented!();
                     let ir_name = name_attr.unwrap_or("DATA".to_string());
-                    Some(ir::Item::new(ir_id, ir_name, 1, kind))
+                    let ir_size = 1; // FIXUP: Add logic for this.
+                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
                 }
                 ir::ItemKind::Debug(_) => None,
                 ir::ItemKind::Label(_) => None,
                 ir::ItemKind::Misc(_) => None,
-                ir::ItemKind::Scope(_) => None,
-                ir::ItemKind::Subroutine(_) => None,
+                ir::ItemKind::Scope(_) => {
+                    let ir_name = name_attr.unwrap_or("SCOPE".to_string());
+                    let ir_size = 3; // FIXUP: Add logic for this.
+                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                }
+                ir::ItemKind::Subroutine(_) => {
+                    let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
+                    let ir_size = 2; // FIXUP: Add logic for this.
+                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    // None,
+                }
             };
 
             // FIXUP: See above note, unwrapping will not always be needed.
