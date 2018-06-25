@@ -522,6 +522,9 @@ pub enum ItemKind {
 
     /// Subroutine item.
     Subroutine(Subroutine),
+
+    /// Type entry.
+    Type(Type),
 }
 
 impl From<Code> for ItemKind {
@@ -563,6 +566,12 @@ impl From<Scope> for ItemKind {
 impl From<Subroutine> for ItemKind {
     fn from(s: Subroutine) -> ItemKind {
         ItemKind::Subroutine(s)
+    }
+}
+
+impl From<Type> for ItemKind {
+    fn from(t: Type) -> ItemKind {
+        ItemKind::Type(t)
     }
 }
 
@@ -717,7 +726,7 @@ impl Scope {
     }
 }
 
-/// Compilation Unit.
+/// Subroutine.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Subroutine;
 
@@ -725,5 +734,16 @@ impl Subroutine {
     /// Construct a new subroutine item.
     pub fn new() -> Subroutine {
         Subroutine
+    }
+}
+
+/// Type entry.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Type;
+
+impl Type {
+    /// Construct a new type entry.
+    pub fn new() -> Type {
+        Type
     }
 }

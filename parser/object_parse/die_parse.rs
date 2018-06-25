@@ -72,6 +72,9 @@ where
                     Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
                     // None,
                 }
+                ir::ItemKind::Type(_) => {
+                    unimplemented!();
+                }
             };
 
             // FIXUP: See above note, unwrapping will not always be needed.
