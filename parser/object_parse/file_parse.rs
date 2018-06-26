@@ -10,6 +10,25 @@ use typed_arena::Arena;
 use super::compilation_unit_parse::CompUnitItemsExtra;
 use super::Parse;
 
+// Helper function used to load a given section of the file.
+fn load_section<'a, 'file, 'input, Sect, Endian>(
+    arena: &'a Arena<Cow<'file, [u8]>>,
+    file: &'file object::File<'input>,
+    endian: Endian,
+) -> Sect
+where
+    Sect: gimli::Section<gimli::EndianSlice<'a, Endian>>,
+    Endian: gimli::Endianity,
+    'file: 'input,
+    'a: 'file,
+{
+    let data = file
+        .section_data_by_name(Sect::section_name())
+        .unwrap_or(Cow::Borrowed(&[]));
+    let data_ref = (*arena.alloc(data)).borrow();
+    Sect::from(gimli::EndianSlice::new(data_ref, endian))
+}
+
 impl<'input> Parse<'input> for object::File<'input> {
     type ItemsExtra = ();
 
@@ -18,25 +37,6 @@ impl<'input> Parse<'input> for object::File<'input> {
         items: &mut ir::ItemsBuilder,
         _extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        // Helper function used to load a given section of the file.
-        fn load_section<'a, 'file, 'input, Sect, Endian>(
-            arena: &'a Arena<Cow<'file, [u8]>>,
-            file: &'file object::File<'input>,
-            endian: Endian,
-        ) -> Sect
-        where
-            Sect: gimli::Section<gimli::EndianSlice<'a, Endian>>,
-            Endian: gimli::Endianity,
-            'file: 'input,
-            'a: 'file,
-        {
-            let data = file
-                .section_data_by_name(Sect::section_name())
-                .unwrap_or(Cow::Borrowed(&[]));
-            let data_ref = (*arena.alloc(data)).borrow();
-            Sect::from(gimli::EndianSlice::new(data_ref, endian))
-        }
-
         // Identify the file's endianty and create a typed arena to load sections.
         let arena = Arena::new();
         let endian = if self.is_little_endian() {
