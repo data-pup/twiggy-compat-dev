@@ -511,9 +511,6 @@ pub enum ItemKind {
     /// Debugging symbols and information, such as a DWARF section.
     Debug(DebugInfo),
 
-    /// Label identifying a source location.
-    Label(Label),
-
     /// Miscellaneous item. Perhaps metadata. Perhaps something else.
     Misc(Misc),
 
@@ -542,12 +539,6 @@ impl From<Data> for ItemKind {
 impl From<DebugInfo> for ItemKind {
     fn from(d: DebugInfo) -> ItemKind {
         ItemKind::Debug(d)
-    }
-}
-
-impl From<Label> for ItemKind {
-    fn from(l: Label) -> ItemKind {
-        ItemKind::Label(l)
     }
 }
 
@@ -690,17 +681,6 @@ impl DebugInfo {
     /// Construct a new IR item for debug information and symbols.
     pub fn new() -> DebugInfo {
         DebugInfo
-    }
-}
-
-/// Label identifying a source location.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Label;
-
-impl Label {
-    /// Construct a new IR item for a label.
-    pub fn new() -> Label {
-        Label
     }
 }
 

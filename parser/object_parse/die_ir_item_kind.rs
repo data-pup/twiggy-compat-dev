@@ -30,11 +30,14 @@ where
         | gimli::DW_TAG_imported_module
         | gimli::DW_TAG_imported_declaration => Some(ir::Scope::new().into()),
         // Subroutine and entry point entries. (Section 3.3)
-        gimli::DW_TAG_subprogram | gimli::DW_TAG_inlined_subroutine | gimli::DW_TAG_entry_point => {
+        gimli::DW_TAG_subprogram => {
             Some(ir::Subroutine::new().into())
         }
+        gimli::DW_TAG_inlined_subroutine | gimli::DW_TAG_entry_point => {
+            None
+        }
         // Label entries. (Section 3.6)
-        gimli::DW_TAG_label => Some(ir::Label::new().into()),
+        gimli::DW_TAG_label => None,
         // With statements. (Section 3.7)
         gimli::DW_TAG_with_stmt => unimplemented!(),
         // Data Object and Object List Entries: (Chapter 4)
