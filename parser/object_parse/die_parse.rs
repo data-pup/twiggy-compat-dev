@@ -36,7 +36,7 @@ where
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
         let Self::ItemsExtra {
-            ir_id: _,
+            ir_id,
             addr_size: _,
             dwarf_version: _,
             debug_str,
@@ -46,7 +46,7 @@ where
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let _name_attr = item_name(self, debug_str)?;
+            let name_attr = item_name(self, debug_str)?;
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {
@@ -66,10 +66,9 @@ where
                     None
                 }
                 ir::ItemKind::Subroutine(_) => {
-                    // let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
-                    // let ir_size = 2; // FIXUP: Add logic for this.
-                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
-                    None
+                    let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
+                    let ir_size = 2; // FIXUP: Add logic for this.
+                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
                 }
                 ir::ItemKind::Type(_) => {
                     unimplemented!();
@@ -92,9 +91,7 @@ where
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        if is_edge(self)? {
-            unimplemented!();
-        }
+        if is_edge(self)? {}
 
         Ok(())
     }

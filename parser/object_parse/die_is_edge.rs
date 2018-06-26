@@ -7,5 +7,6 @@ pub fn is_edge<R>(
 where
     R: gimli::Reader,
 {
-    unimplemented!();
+    // unimplemented!();
+    Ok(true) // FIXUP: Temporary pass as okay.
 }
