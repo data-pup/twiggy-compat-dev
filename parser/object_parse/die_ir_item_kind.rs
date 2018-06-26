@@ -7,7 +7,7 @@ use traits;
 pub fn item_kind<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _debug_types: &gimli::DebugTypes<R>,
-    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
+    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
 ) -> Result<Option<ir::ItemKind>, traits::Error>
 where
     R: gimli::Reader,
@@ -30,12 +30,8 @@ where
         | gimli::DW_TAG_imported_module
         | gimli::DW_TAG_imported_declaration => Some(ir::Scope::new().into()),
         // Subroutine and entry point entries. (Section 3.3)
-        gimli::DW_TAG_subprogram => {
-            Some(ir::Subroutine::new().into())
-        }
-        gimli::DW_TAG_inlined_subroutine | gimli::DW_TAG_entry_point => {
-            None
-        }
+        gimli::DW_TAG_subprogram => Some(ir::Subroutine::new().into()),
+        gimli::DW_TAG_inlined_subroutine | gimli::DW_TAG_entry_point => None,
         // Label entries. (Section 3.6)
         gimli::DW_TAG_label => None,
         // With statements. (Section 3.7)
@@ -154,7 +150,7 @@ where
 fn _type_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _debug_types: &gimli::DebugTypes<R>,
-    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>
+    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
 ) -> Result<Option<String>, traits::Error>
 where
     R: gimli::Reader,
