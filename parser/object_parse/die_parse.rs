@@ -53,24 +53,24 @@ where
             let new_ir_item: Option<ir::Item> = match kind {
                 ir::ItemKind::Code(_) => None,
                 ir::ItemKind::Data(_) => {
-                    // let _location = self.attr_value(gimli::DW_AT_location)?;
-                    let ir_name = name_attr.unwrap_or("DATA".to_string());
-                    let ir_size = 1; // FIXUP: Add logic for this.
-                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    // let ir_name = name_attr.unwrap_or("DATA".to_string());
+                    // let ir_size = 1; // FIXUP: Add logic for this.
+                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    None
                 }
                 ir::ItemKind::Debug(_) => None,
-                ir::ItemKind::Label(_) => None,
                 ir::ItemKind::Misc(_) => None,
                 ir::ItemKind::Scope(_) => {
-                    let ir_name = name_attr.unwrap_or("SCOPE".to_string());
-                    let ir_size = 3; // FIXUP: Add logic for this.
-                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    // let ir_name = name_attr.unwrap_or("SCOPE".to_string());
+                    // let ir_size = 3; // FIXUP: Add logic for this.
+                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    None
                 }
                 ir::ItemKind::Subroutine(_) => {
-                    let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
-                    let ir_size = 2; // FIXUP: Add logic for this.
-                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
-                    // None,
+                    // let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
+                    // let ir_size = 2; // FIXUP: Add logic for this.
+                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    None
                 }
                 ir::ItemKind::Type(_) => {
                     unimplemented!();
