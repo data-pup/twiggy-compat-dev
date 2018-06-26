@@ -7,7 +7,7 @@ use object::{self, Object};
 use traits;
 use typed_arena::Arena;
 
-use super::compilation_unit_parse::CompUnitItemsExtra;
+use super::compilation_unit_parse::{CompUnitEdgesExtra, CompUnitItemsExtra};
 use super::Parse;
 
 // Helper function used to load a given section of the file.
@@ -76,10 +76,25 @@ impl<'input> Parse<'input> for object::File<'input> {
 
     fn parse_edges(
         &self,
-        _items: &mut ir::ItemsBuilder,
+        items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        // unimplemented!();
+        // Identify the file's endianty and create a typed arena to load sections.
+        let arena = Arena::new();
+        let endian = if self.is_little_endian() {
+            gimli::RunTimeEndian::Little
+        } else {
+            gimli::RunTimeEndian::Big
+        };
+
+        // Load the `.debug_info` section, and parse the edges in each compilation unit.
+        let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
+        let mut compilation_units = debug_info.units().enumerate();
+        while let Some((unit_id, unit)) = compilation_units.next()? {
+            let extra = CompUnitEdgesExtra { unit_id };
+            unit.parse_edges(items, extra)?
+        }
+
         Ok(())
     }
 }
