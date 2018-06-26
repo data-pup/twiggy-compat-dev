@@ -37,8 +37,6 @@ impl<'input> Parse<'input> for object::File<'input> {
             Sect::from(gimli::EndianSlice::new(data_ref, endian))
         }
 
-        println!("Parsing file..."); // FIXUP: Debug print line.
-
         // Identify the file's endianty and create a typed arena to load sections.
         let arena = Arena::new();
         let endian = if self.is_little_endian() {
@@ -61,7 +59,6 @@ impl<'input> Parse<'input> for object::File<'input> {
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         let mut compilation_units = debug_info.units().enumerate();
         while let Some((unit_id, unit)) = compilation_units.next()? {
-            println!("Calling parse on unit: {}", unit_id); // FIXUP: Debug print line.
             let extra = CompUnitItemsExtra {
                 unit_id,
                 debug_abbrev,
