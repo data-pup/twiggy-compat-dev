@@ -16,6 +16,14 @@ where
     pub rnglists: &'input gimli::RangeLists<R>,
 }
 
+// DEVELOPMENT NOTE: This will be signature for this struct.
+// pub struct CompUnitEdgesExtra<'input, R>
+// where
+//     R: 'input + gimli::Reader,
+pub struct CompUnitEdgesExtra {
+    pub unit_id: usize,
+}
+
 impl<'input, R> Parse<'input> for gimli::CompilationUnitHeader<R, R::Offset>
 where
     R: 'input + gimli::Reader,
@@ -77,13 +85,14 @@ where
         Ok(())
     }
 
-    type EdgesExtra = ();
+    type EdgesExtra = CompUnitEdgesExtra;
 
     fn parse_edges(
         &self,
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
+        // TODO: Process the extra edges information.
         unimplemented!();
     }
 }
