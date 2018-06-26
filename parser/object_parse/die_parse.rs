@@ -4,6 +4,7 @@ use traits;
 
 use super::die_ir_item_kind::item_kind;
 use super::die_ir_item_name::item_name;
+use super::die_is_edge::is_edge;
 use super::Parse;
 
 // FIXUP: Not using this function as is.
@@ -91,6 +92,10 @@ where
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        unimplemented!();
+        if is_edge(self)? {
+            unimplemented!();
+        }
+
+        Ok(())
     }
 }
