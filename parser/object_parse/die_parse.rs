@@ -34,8 +34,6 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        println!("Parsing DIE..."); // FIXUP: Debug print line.
-
         let Self::ItemsExtra {
             ir_id,
             addr_size: _,

@@ -27,8 +27,6 @@ where
         items: &mut ir::ItemsBuilder,
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
-        println!("Parsing compilation unit..."); // FIXUP: Debug print line.
-
         // Destructure the extra information needed to parse items in the unit.
         let Self::ItemsExtra {
             unit_id,
