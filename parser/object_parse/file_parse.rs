@@ -87,11 +87,17 @@ impl<'input> Parse<'input> for object::File<'input> {
             gimli::RunTimeEndian::Big
         };
 
+        // Load the sections of the file containing debugging information.
+        let debug_abbrev: gimli::DebugAbbrev<_> = load_section(&arena, self, endian);
+
         // Load the `.debug_info` section, and parse the edges in each compilation unit.
         let debug_info: gimli::DebugInfo<_> = load_section(&arena, self, endian);
         let mut compilation_units = debug_info.units().enumerate();
         while let Some((unit_id, unit)) = compilation_units.next()? {
-            let extra = CompUnitEdgesExtra { unit_id };
+            let extra = CompUnitEdgesExtra {
+                unit_id,
+                debug_abbrev,
+            };
             unit.parse_edges(items, extra)?
         }
 

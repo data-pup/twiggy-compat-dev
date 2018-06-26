@@ -35,7 +35,7 @@ where
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
         let Self::ItemsExtra {
-            ir_id,
+            ir_id: _,
             addr_size: _,
             dwarf_version: _,
             debug_str,
@@ -45,7 +45,7 @@ where
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let name_attr = item_name(self, debug_str)?;
+            let _name_attr = item_name(self, debug_str)?;
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {

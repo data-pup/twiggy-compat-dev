@@ -20,8 +20,12 @@ where
 // pub struct CompUnitEdgesExtra<'input, R>
 // where
 //     R: 'input + gimli::Reader,
-pub struct CompUnitEdgesExtra {
+pub struct CompUnitEdgesExtra<R>
+where
+    R: gimli::Reader,
+{
     pub unit_id: usize,
+    pub debug_abbrev: gimli::DebugAbbrev<R>,
 }
 
 impl<'input, R> Parse<'input> for gimli::CompilationUnitHeader<R, R::Offset>
@@ -85,14 +89,45 @@ where
         Ok(())
     }
 
-    type EdgesExtra = CompUnitEdgesExtra;
+    type EdgesExtra = CompUnitEdgesExtra<R>;
 
     fn parse_edges(
         &self,
-        _items: &mut ir::ItemsBuilder,
-        _extra: Self::EdgesExtra,
+        items: &mut ir::ItemsBuilder,
+        extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        // TODO: Process the extra edges information.
-        unimplemented!();
+        let Self::EdgesExtra {
+            unit_id,
+            debug_abbrev,
+        } = extra;
+
+        // Initialize an entry ID counter.
+        let mut entry_id = 0;
+
+        // Find the abbreviations associated with this compilation unit.
+        // Use the abbreviations to create an entries cursor, and move it to the root.
+        let abbrevs = self
+            .abbreviations(&debug_abbrev)
+            .expect("Could not find abbreviations");
+        let mut die_cursor = self.entries(&abbrevs);
+        assert!(die_cursor.next_dfs().unwrap().is_some());
+
+        // Parse the contained debugging information entries in depth-first order.
+        let mut depth = 0;
+        while let Some((delta, entry)) = die_cursor.next_dfs()? {
+            // Update depth value, and break out of the loop when we
+            // return to the original starting position.
+            depth += delta;
+            assert!(depth >= 0);
+            if depth <= 0 {
+                break;
+            }
+
+            let _ir_id = ir::Id::entry(unit_id, entry_id);
+            entry.parse_edges(items, ())?;
+            entry_id += 1;
+        }
+
+        Ok(())
     }
 }
