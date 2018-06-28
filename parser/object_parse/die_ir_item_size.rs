@@ -1,4 +1,3 @@
-use fallible_iterator::FallibleIterator;
 use gimli;
 use traits;
 
@@ -18,15 +17,6 @@ pub fn subroutine_size<R>(
 where
     R: gimli::Reader,
 {
-    // let base_addr = match die
-    //     .attr_value(gimli::DW_AT_low_pc)?
-    //     .ok_or(traits::Error::with_msg(
-    //         "Compilation unit missing DW_AT_low_pc value",
-    //     ))? {
-    //     gimli::AttributeValue::Addr(address) => Ok(address),
-    //     _ => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
-    // }?;
-
     let low_pc_value: Option<u64> = get_low_pc_value(die)?;
 
     if let Some(base_addr) = low_pc_value {
@@ -48,31 +38,6 @@ where
             rnglists,
         )
     }
-
-    // if let Some(high_pc_attr) = die.attr_value(gimli::DW_AT_high_pc)? {
-    //     match high_pc_attr {
-    //         gimli::AttributeValue::Addr(end_addr) => Ok(end_addr - base_addr),
-    //         gimli::AttributeValue::Udata(offset) => Ok(offset),
-    //         _ => Err(traits::Error::with_msg(
-    //             "Unexpected DW_AT_high_pc attribute value",
-    //         )),
-    //     }
-    // } else if let Some(ranges_attr) = die.attr_value(gimli::DW_AT_ranges)? {
-    //     match ranges_attr {
-    //         gimli::AttributeValue::RangeListsRef(offset) => {
-    //             let size: u64 = rnglists
-    //                 .ranges(offset, version, addr_size, base_addr)?
-    //                 .map(|r| r.end - r.begin)
-    //                 .fold(0, |res, size| res + size)?;
-    //             Ok(size)
-    //         }
-    //         _ => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
-    //     }
-    // } else {
-    //     Err(traits::Error::with_msg(
-    //         "Error calculating compilation unit size",
-    //     ))
-    // }
 }
 
 fn get_low_pc_value<R>(
@@ -101,7 +66,6 @@ fn get_contiguous_item_size<R>(
 where
     R: gimli::Reader,
 {
-    // if let Some(high_pc_attr) = die.attr_value(gimli::DW_AT_high_pc)? {
     if let Some(high_pc_attr) = high_pc_val {
         match high_pc_attr {
             gimli::AttributeValue::Addr(end_addr) => Ok(end_addr - low_pc_val),
@@ -119,11 +83,11 @@ where
 ///
 /// Get the size of an entity that occupies non-contiguous address ranges.
 fn get_ranges_item_size<R>(
-    ranges_attr: gimli::AttributeValue<R>,
-    base_addr: gimli::AttributeValue<R>,
-    addr_size: u8,
-    version: u16,
-    rnglists: &gimli::RangeLists<R>,
+    _ranges_attr: gimli::AttributeValue<R>,
+    _base_addr: gimli::AttributeValue<R>,
+    _addr_size: u8,
+    _version: u16,
+    _rnglists: &gimli::RangeLists<R>,
 ) -> Result<u64, traits::Error>
 where
     R: gimli::Reader,

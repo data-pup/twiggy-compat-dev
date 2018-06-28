@@ -8,6 +8,19 @@ use super::die_ir_item_size::subroutine_size;
 use super::die_is_edge::is_edge;
 use super::Parse;
 
+type FallibleOption<T> = Result<Option<T>, traits::Error>;
+
+trait _LocationAttributes<R>
+where
+    R: gimli::Reader,
+{
+    fn dw_at_low_pc() -> FallibleOption<gimli::AttributeValue<R>>;
+    fn dw_at_high_pc() -> FallibleOption<gimli::AttributeValue<R>>;
+    fn dw_at_entry_pc() -> FallibleOption<gimli::AttributeValue<R>>;
+    fn dw_at_ranges() -> FallibleOption<gimli::AttributeValue<R>>;
+}
+
+
 pub struct DIEItemsExtra<'unit, R>
 where
     R: 'unit + gimli::Reader,
