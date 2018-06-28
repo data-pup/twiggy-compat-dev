@@ -4,11 +4,9 @@ use traits;
 
 use super::die_ir_item_kind::item_kind;
 use super::die_ir_item_name::item_name;
+use super::die_ir_item_size::subroutine_size;
 use super::die_is_edge::is_edge;
 use super::Parse;
-
-// FIXUP: Not using this function as is.
-// use super::die_ir_item_size::compilation_unit_size;
 
 pub struct DIEItemsExtra<'unit, R>
 where
@@ -37,11 +35,11 @@ where
     ) -> Result<(), traits::Error> {
         let Self::ItemsExtra {
             ir_id,
-            addr_size: _,
-            dwarf_version: _,
+            addr_size,
+            dwarf_version,
             debug_str,
             debug_types,
-            rnglists: _,
+            rnglists,
             comp_unit,
         } = extra;
 
@@ -67,8 +65,8 @@ where
                 }
                 ir::ItemKind::Subroutine(_) => {
                     let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
-                    let ir_size = 2; // FIXUP: Add logic for this.
-                    Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
+                    let ir_size = subroutine_size(self, addr_size, dwarf_version, rnglists)?;
+                    Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
                 }
                 ir::ItemKind::Type(_) => {
                     unimplemented!();
