@@ -2,10 +2,16 @@ use gimli;
 use ir;
 use traits;
 
-use super::die_ir_item_kind::item_kind;
-use super::die_ir_item_name::item_name;
-use super::die_ir_item_size::subroutine_size;
-use super::die_is_edge::is_edge;
+mod die_ir_item_kind;
+mod die_ir_item_name;
+mod die_ir_item_size;
+mod die_is_edge;
+
+use self::die_ir_item_kind::item_kind;
+use self::die_ir_item_name::item_name;
+use self::die_ir_item_size::subroutine_size;
+use self::die_is_edge::is_edge;
+
 use super::Parse;
 
 struct _DieLocationAttributes<R: gimli::Reader> {
