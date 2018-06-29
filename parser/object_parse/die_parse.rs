@@ -10,16 +10,38 @@ use super::Parse;
 
 type FallibleOption<T> = Result<Option<T>, traits::Error>;
 
-trait _LocationAttributes<R>
-where
-    R: gimli::Reader,
-{
-    fn dw_at_low_pc() -> FallibleOption<gimli::AttributeValue<R>>;
-    fn dw_at_high_pc() -> FallibleOption<gimli::AttributeValue<R>>;
-    fn dw_at_entry_pc() -> FallibleOption<gimli::AttributeValue<R>>;
-    fn dw_at_ranges() -> FallibleOption<gimli::AttributeValue<R>>;
+struct _LocationAttributes<R: gimli::Reader> {
+    dw_at_low_pc: FallibleOption<gimli::AttributeValue<R>>,
+    dw_at_high_pc: FallibleOption<gimli::AttributeValue<R>>,
+    dw_at_entry_pc: FallibleOption<gimli::AttributeValue<R>>,
+    dw_at_ranges: FallibleOption<gimli::AttributeValue<R>>,
 }
 
+impl<R: gimli::Reader> _LocationAttributes<R> {
+    /// Try to create a new location attributes instance using the given
+    /// debugging information entry (DIE). Reading these attributes may fail,
+    /// so this will return a Result rather than a plain `Self`.
+    fn try_from(
+        die: &gimli::DebuggingInformationEntry<R, R::Offset>,
+    ) -> Result<Self, traits::Error> {
+        unimplemented!();
+    }
+
+    /// Return a boolean specifying whether or not this DIE represents the
+    /// definition of a subroutine. DIEs without any location attributes
+    /// represent a declaration.
+    fn is_declaration(&self) -> Result<bool, traits::Error> {
+        unimplemented!();
+    }
+
+    fn base_addr(&self) -> FallibleOption<gimli::AttributeValue<R>> {
+        unimplemented!();
+    }
+
+    fn is_contiguous() -> FallibleOption<gimli::AttributeValue<R>> {
+        unimplemented!();
+    }
+}
 
 pub struct DIEItemsExtra<'unit, R>
 where
