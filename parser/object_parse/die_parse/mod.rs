@@ -2,16 +2,17 @@ use gimli;
 use ir;
 use traits;
 
+mod is_edge;
 mod item_kind;
 mod item_name;
 mod item_size;
-mod is_edge;
 mod location_attrs;
 
+use self::is_edge::is_edge;
 use self::item_kind::item_kind;
 use self::item_name::item_name;
 use self::item_size::subroutine_size;
-use self::is_edge::is_edge;
+use self::location_attrs::DieLocationAttributes;
 
 use super::Parse;
 
@@ -72,6 +73,7 @@ where
                 }
                 ir::ItemKind::Subroutine(_) => {
                     let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
+                    let _ = DieLocationAttributes::try_from(self)?;
                     let ir_size = subroutine_size(self, addr_size, dwarf_version, rnglists)?;
                     Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
                 }
