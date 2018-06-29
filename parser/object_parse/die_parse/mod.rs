@@ -2,15 +2,15 @@ use gimli;
 use ir;
 use traits;
 
-mod die_ir_item_kind;
-mod die_ir_item_name;
-mod die_ir_item_size;
-mod die_is_edge;
+mod item_kind;
+mod item_name;
+mod item_size;
+mod is_edge;
 
-use self::die_ir_item_kind::item_kind;
-use self::die_ir_item_name::item_name;
-use self::die_ir_item_size::subroutine_size;
-use self::die_is_edge::is_edge;
+use self::item_kind::item_kind;
+use self::item_name::item_name;
+use self::item_size::subroutine_size;
+use self::is_edge::is_edge;
 
 use super::Parse;
 
