@@ -2,7 +2,6 @@ use gimli;
 use traits;
 
 pub struct DieLocationAttributes<R: gimli::Reader> {
-    dw_tag: gimli::DwTag,
     dw_at_low_pc: Option<gimli::AttributeValue<R>>,
     dw_at_high_pc: Option<gimli::AttributeValue<R>>,
     dw_at_entry_pc: Option<gimli::AttributeValue<R>>,
@@ -18,7 +17,6 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
         die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     ) -> Result<Self, traits::Error> {
         let res = Self {
-            dw_tag: die.tag(),
             dw_at_low_pc: die.attr_value(gimli::DW_AT_low_pc)?,
             dw_at_high_pc: die.attr_value(gimli::DW_AT_high_pc)?,
             dw_at_entry_pc: die.attr_value(gimli::DW_AT_entry_pc)?,
@@ -26,6 +24,30 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
         };
 
         Ok(res)
+    }
+
+    /// Get the value of the DW_AT_low_pc attribute in the form of a u64.
+    pub fn get_low_pc_value(&self) -> Result<Option<u64>, traits::Error> {
+        match self.dw_at_low_pc {
+            Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
+            Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
+            None => Ok(None),
+        }
+    }
+
+    /// FIXUP: ADD COMMENT.
+    pub fn get_high_pc(&self) -> Option<&gimli::AttributeValue<R>> {
+        self.dw_at_high_pc.as_ref()
+    }
+
+    /// FIXUP: ADD COMMENT.
+    pub fn get_entry_pc(&self) -> Option<&gimli::AttributeValue<R>> {
+        self.dw_at_entry_pc.as_ref()
+    }
+
+    /// FIXUP: ADD COMMENT.
+    pub fn get_ranges(&self) -> Option<&gimli::AttributeValue<R>> {
+        self.dw_at_ranges.as_ref()
     }
 
     /// Return a boolean value specifying whether or not this DIE represents

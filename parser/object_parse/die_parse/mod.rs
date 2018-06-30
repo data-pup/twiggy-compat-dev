@@ -52,7 +52,9 @@ where
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
+            let location_attrs = DieLocationAttributes::try_from(self)?;
             let name_attr = item_name(self, debug_str)?;
+
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {
@@ -73,8 +75,8 @@ where
                 }
                 ir::ItemKind::Subroutine(_) => {
                     let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
-                    let _ = DieLocationAttributes::try_from(self)?;
-                    let ir_size = subroutine_size(self, addr_size, dwarf_version, rnglists)?;
+                    let ir_size =
+                        subroutine_size(location_attrs, addr_size, dwarf_version, rnglists)?;
                     Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
                 }
                 ir::ItemKind::Type(_) => {
