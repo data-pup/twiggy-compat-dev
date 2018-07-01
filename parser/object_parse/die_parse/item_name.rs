@@ -6,6 +6,9 @@ use traits;
 /// entity that has been given a name may have a `DW_AT_name` attribute. If there was
 /// not a name assigned to the entity in the source code, the attribute may either not
 /// exist, or be a single null byte.
+///
+/// If no name was assigned, a name will be decided elsewhere using the
+/// ir::ItemKind variant that was determined for the entity.
 pub fn item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     debug_str: &gimli::DebugStr<R>,
