@@ -2,19 +2,17 @@ use gimli;
 use ir;
 use traits;
 
-mod is_edge;
+use super::Parse;
+
 mod item_kind;
 mod item_name;
 mod item_size;
 mod location_attrs;
 
-use self::is_edge::is_edge;
 use self::item_kind::item_kind;
 use self::item_name::item_name;
 use self::item_size::subroutine_size;
 use self::location_attrs::DieLocationAttributes;
-
-use super::Parse;
 
 pub struct DIEItemsExtra<'unit, R>
 where
@@ -100,8 +98,8 @@ where
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        if is_edge(self)? {}
-
+        // FIXUP: Identify whether this item should be considered an edge.
+        // NOTE: Currently no edges are created.
         Ok(())
     }
 }
