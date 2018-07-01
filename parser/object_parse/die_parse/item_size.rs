@@ -19,19 +19,19 @@ pub fn subroutine_size<R>(
 where
     R: gimli::Reader,
 {
-    let low_pc_value: Option<u64> = location_attrs.get_low_pc_value()?;
+    let low_pc_value: Option<u64> = location_attrs.dw_at_low_pc()?;
 
     if let Some(base_addr) = low_pc_value {
-        let high_pc_val = location_attrs.get_high_pc();
+        let high_pc_val = location_attrs.dw_at_high_pc();
         get_contiguous_item_size(base_addr, high_pc_val, addr_size)
     } else {
-        let base_addr = location_attrs.get_entry_pc();
+        let base_addr = location_attrs.dw_at_entry_pc();
         if base_addr.is_none() {
             // FIXUP: A subroutine entry representing a subroutine declaration that
             // is not also a definition does not have code address or range attributes.
             return Ok(0);
         }
-        let ranges_attr = location_attrs.get_ranges().unwrap(); // FIXUP
+        let ranges_attr = location_attrs.dw_at_ranges().unwrap(); // FIXUP
         get_ranges_item_size(
             ranges_attr,
             base_addr.unwrap(),
