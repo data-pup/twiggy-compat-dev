@@ -45,9 +45,7 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     ) -> FallilbleOption<u64> {
         if let Some(size) = self.contiguous_entity_size()? {
             Ok(Some(size))
-        } else if let Some(size) =
-            self.noncontiguous_entity_size(addr_size, version, rnglists)?
-        {
+        } else if let Some(size) = self.noncontiguous_entity_size(addr_size, version, rnglists)? {
             Ok(Some(size))
         } else {
             Ok(None)
@@ -63,7 +61,7 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
             // between that value and the DW_AT_low_pc address.
             (Some(low_pc), Some(gimli::AttributeValue::Addr(high_pc))) => {
                 Ok(Some(high_pc - low_pc))
-            },
+            }
             // DWARF 4 allows the DW_AT_high_pc to be encoded as an offset from the
             // address in DW_AT_low_pc. If so, return the offset as the contiguous size.
             (Some(_), Some(gimli::AttributeValue::Udata(offset))) => Ok(Some(*offset)),
@@ -81,17 +79,19 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     /// ranges of machine code addresses in the binary.
     fn noncontiguous_entity_size(
         &self,
-        // base_addr: u64,
         addr_size: u8,
         version: u16,
         rnglists: &gimli::RangeLists<R>,
     ) -> FallilbleOption<u64> {
+        // Identify the base address, which is in the `DW_AT_low_pc` attribute,
+        // or the `DW_AT_entry_pc` attribute for noncontiguous entities.
         let base_addr: u64 = if let Some(addr) = self.dw_at_low_pc()? {
             addr
         } else if let Some(addr) = self.dw_at_entry_pc()? {
             addr
         } else {
-            return Ok(None)
+            // If neither exists, this DIE does not represent a definition.
+            return Ok(None);
         };
 
         if let Some(offset) = self.dw_at_ranges()? {
@@ -129,7 +129,9 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
 
     /// Return the DW_AT_ranges attribute as a u64 value representing an offset
     /// into the `.debug_ranges` section of the file.
-    fn dw_at_ranges(&self) -> FallilbleOption<gimli::RangeListsOffset<<R as gimli::Reader>::Offset>> {
+    fn dw_at_ranges(
+        &self,
+    ) -> FallilbleOption<gimli::RangeListsOffset<<R as gimli::Reader>::Offset>> {
         match &self.dw_at_ranges {
             Some(gimli::AttributeValue::RangeListsRef(offset)) => Ok(Some(*offset)),
             Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_ranges value")),
