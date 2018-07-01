@@ -6,12 +6,10 @@ use super::Parse;
 
 mod item_kind;
 mod item_name;
-mod item_size;
 mod location_attrs;
 
 use self::item_kind::item_kind;
 use self::item_name::item_name;
-use self::item_size::subroutine_size;
 use self::location_attrs::DieLocationAttributes;
 
 pub struct DIEItemsExtra<'unit, R>
@@ -50,8 +48,8 @@ where
         } = extra;
 
         if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let location_attrs = DieLocationAttributes::try_from(self)?;
             let name_attr = item_name(self, debug_str)?;
+            let location_attrs = DieLocationAttributes::try_from(self)?;
 
             // FIXUP: This will eventually result in a plain `ir::Item` object,
             // returning an Option for now so I can develop incrementally.
@@ -73,9 +71,13 @@ where
                 }
                 ir::ItemKind::Subroutine(_) => {
                     let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
-                    let ir_size =
-                        subroutine_size(location_attrs, addr_size, dwarf_version, rnglists)?;
-                    Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
+                    if let Some(ir_size) =
+                        location_attrs.entity_size(addr_size, dwarf_version, rnglists)?
+                    {
+                        Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
+                    } else {
+                        None
+                    }
                 }
                 ir::ItemKind::Type(_) => {
                     unimplemented!();
