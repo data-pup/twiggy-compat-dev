@@ -12,6 +12,13 @@ use self::item_kind::item_kind;
 use self::item_name::item_name;
 use self::location_attrs::DieLocationAttributes;
 
+/// This type alias is used to represent an option return value for
+/// a procedure that could return an Error.
+type FallilbleOption<T> = Result<Option<T>, traits::Error>;
+
+/// This struct represents the extra items required by the Parse trait's
+/// `parse_items` method. This is constructed by the compilation unit's
+/// own implementation of `parse_items`.
 pub struct DIEItemsExtra<'unit, R>
 where
     R: 'unit + gimli::Reader,
