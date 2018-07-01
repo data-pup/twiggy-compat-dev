@@ -58,6 +58,7 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     /// Return a boolean value specifying whether or not this DIE represents
     /// the definition of a subroutine. DIEs without any location attributes
     /// represent a declaration.
+    /// FIXUP: Does this only apply to subprograms/subroutines?
     fn _is_definition(&self) -> bool {
         self.dw_at_low_pc.is_some() && self.dw_at_entry_pc.is_some()
     }
@@ -71,9 +72,10 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     /// Return the base address, which will be the value of `DW_AT_low_pc`,
     /// or `DW_AT_entry_pc` if the former attribute does not exist.
     fn _base_addr(&self) -> Option<&gimli::AttributeValue<R>> {
+        // FIXUP: This should use the `dw_at_low_pc` *method*
         if let Some(dw_at_low_pc) = &self.dw_at_low_pc {
             Some(&dw_at_low_pc)
-        } else if let Some(dw_at_entry_pc) = &self.dw_at_entry_pc {
+        } else if let Some(dw_at_entry_pc) = self.dw_at_entry_pc() {
             Some(&dw_at_entry_pc)
         } else {
             None
