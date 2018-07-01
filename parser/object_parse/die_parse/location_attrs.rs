@@ -1,6 +1,11 @@
 use gimli;
 use traits;
 
+/// This struct holds the values for DWARF attributes related to an object's
+/// location in a binary. This is intended to help consolidate the error
+/// checking involved in reading attributes, and simplify the process of
+/// size calculations for the entity that a debugging information entry (DIE)
+/// describes.
 pub struct DieLocationAttributes<R: gimli::Reader> {
     dw_at_low_pc: Option<gimli::AttributeValue<R>>,
     dw_at_high_pc: Option<gimli::AttributeValue<R>>,
@@ -27,7 +32,7 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     }
 
     /// Get the value of the DW_AT_low_pc attribute in the form of a u64.
-    pub fn get_low_pc_value(&self) -> Result<Option<u64>, traits::Error> {
+    pub fn dw_at_low_pc(&self) -> Result<Option<u64>, traits::Error> {
         match self.dw_at_low_pc {
             Some(gimli::AttributeValue::Addr(address)) => Ok(Some(address)),
             Some(_) => Err(traits::Error::with_msg("Unexpected DW_AT_low_pc value")),
@@ -36,17 +41,17 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     }
 
     /// Get a borrowed reference to the `DW_AT_high_pc` attribute value.
-    pub fn get_high_pc(&self) -> Option<&gimli::AttributeValue<R>> {
+    pub fn dw_at_high_pc(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_high_pc.as_ref()
     }
 
     /// Get a borrowed reference to the `DW_AT_entry_pc` attribute value.
-    pub fn get_entry_pc(&self) -> Option<&gimli::AttributeValue<R>> {
+    pub fn dw_at_entry_pc(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_entry_pc.as_ref()
     }
 
     /// Get a borrowed reference to the `DW_AT_ranges` attribute value.
-    pub fn get_ranges(&self) -> Option<&gimli::AttributeValue<R>> {
+    pub fn dw_at_ranges(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_ranges.as_ref()
     }
 
