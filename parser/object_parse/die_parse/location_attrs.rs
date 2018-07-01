@@ -35,17 +35,17 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
         }
     }
 
-    /// FIXUP: ADD COMMENT.
+    /// Get a borrowed reference to the `DW_AT_high_pc` attribute value.
     pub fn get_high_pc(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_high_pc.as_ref()
     }
 
-    /// FIXUP: ADD COMMENT.
+    /// Get a borrowed reference to the `DW_AT_entry_pc` attribute value.
     pub fn get_entry_pc(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_entry_pc.as_ref()
     }
 
-    /// FIXUP: ADD COMMENT.
+    /// Get a borrowed reference to the `DW_AT_ranges` attribute value.
     pub fn get_ranges(&self) -> Option<&gimli::AttributeValue<R>> {
         self.dw_at_ranges.as_ref()
     }
