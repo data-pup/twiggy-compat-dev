@@ -1,6 +1,7 @@
 use gimli;
 use ir;
-use traits;
+
+use super::FallilbleOption;
 
 /// Calculate the kind of IR item to represent the code or data associated with
 /// a given debugging information entry.
@@ -8,7 +9,7 @@ pub fn item_kind<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     _debug_types: &gimli::DebugTypes<R>,
     _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
-) -> Result<Option<ir::ItemKind>, traits::Error>
+) -> FallilbleOption<ir::ItemKind>
 where
     R: gimli::Reader,
 {
@@ -139,36 +140,4 @@ where
     };
 
     Ok(item_kind)
-}
-
-/// Find the name of the entry referenced by the `DW_AT_type` attribute for a
-/// DIE representing a data object or object list entry. Note that this is
-/// referring to the type, not the item kind, and returns the value of that
-/// entry's `DW_AT_name` attribute.
-///
-/// FIXUP: What type(s) is contained in the `DW_AT_type` attribute?
-fn _type_name<R>(
-    die: &gimli::DebuggingInformationEntry<R, R::Offset>,
-    _debug_types: &gimli::DebugTypes<R>,
-    _compilation_unit: &gimli::CompilationUnitHeader<R, <R as gimli::Reader>::Offset>,
-) -> Result<Option<String>, traits::Error>
-where
-    R: gimli::Reader,
-{
-    if let Some(type_attr) = die.attr_value(gimli::DW_AT_type)? {
-        match type_attr {
-            gimli::AttributeValue::DebugTypesRef(_) => {
-                unimplemented!();
-            }
-            gimli::AttributeValue::UnitRef(_) => {
-                unimplemented!();
-            }
-            _ => Err(traits::Error::with_msg(format!(
-                "Unexpected type encoding, found type: {:?}",
-                type_attr
-            ))),
-        }
-    } else {
-        Ok(None)
-    }
 }

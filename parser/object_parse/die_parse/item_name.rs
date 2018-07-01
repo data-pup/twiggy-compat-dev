@@ -1,5 +1,6 @@
 use gimli;
-use traits;
+
+use super::FallilbleOption;
 
 /// Calculate the item's name. For more information about this, refer to Section 2.15 of
 /// the DWARF v5 specification: 'Identifier Names'. Any DIE associated representing an
@@ -12,7 +13,7 @@ use traits;
 pub fn item_name<R>(
     die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     debug_str: &gimli::DebugStr<R>,
-) -> Result<Option<String>, traits::Error>
+) -> FallilbleOption<String>
 where
     R: gimli::Reader,
 {
