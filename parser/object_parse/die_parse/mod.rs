@@ -23,7 +23,8 @@ pub struct DIEItemsExtra<'unit, R>
 where
     R: 'unit + gimli::Reader,
 {
-    pub ir_id: ir::Id,
+    pub entry_id: usize,
+    pub unit_id: usize,
     pub addr_size: u8,
     pub dwarf_version: u16,
     pub debug_str: &'unit gimli::DebugStr<R>,
@@ -45,7 +46,8 @@ where
         extra: Self::ItemsExtra,
     ) -> Result<(), traits::Error> {
         let Self::ItemsExtra {
-            ir_id,
+            entry_id,
+            unit_id,
             addr_size,
             dwarf_version,
             debug_str,
@@ -54,37 +56,20 @@ where
             comp_unit,
         } = extra;
 
-        if let Some(kind) = item_kind(self, debug_types, comp_unit)? {
-            let name_attr = item_name(self, debug_str)?;
-            let location_attrs = DieLocationAttributes::try_from(self)?;
-
-            // FIXUP: This will eventually result in a plain `ir::Item` object,
-            // returning an Option for now so I can develop incrementally.
-            let new_ir_item: Option<ir::Item> = match kind {
-                ir::ItemKind::Code(_) => None,
-                ir::ItemKind::Data(_) => None,
-                ir::ItemKind::Debug(_) => None,
-                ir::ItemKind::Misc(_) => None,
-                ir::ItemKind::Scope(_) => None,
-                ir::ItemKind::Subroutine(_) => {
-                    let ir_name = name_attr.unwrap_or("Subroutine".to_string());
-                    if let Some(ir_size) =
-                        location_attrs.entity_size(addr_size, dwarf_version, rnglists)?
-                    {
-                        Some(ir::Item::new(ir_id, ir_name, ir_size as u32, kind))
-                    } else {
-                        None
-                    }
-                }
-                ir::ItemKind::Type(_) => {
-                    unimplemented!();
-                }
-            };
-
-            // FIXUP: See above note, unwrapping will not always be needed.
-            if let Some(item) = new_ir_item {
-                items.add_item(item);
+        let item = match item_kind(self, debug_types, comp_unit)? {
+            Some(kind @ ir::ItemKind::Subroutine(_)) => {
+                let name = item_name(self, debug_str)?
+                    .unwrap_or(format!("Subroutine[{}][{}]", unit_id, entry_id));
+                let id = ir::Id::entry(unit_id, entry_id);
+                DieLocationAttributes::try_from(self)?
+                    .entity_size(addr_size, dwarf_version, rnglists)?
+                    .map(|size| ir::Item::new(id, name, size as u32, kind))
             }
+            _ => None,
+        };
+
+        if let Some(item) = item {
+            items.add_item(item);
         }
 
         Ok(())

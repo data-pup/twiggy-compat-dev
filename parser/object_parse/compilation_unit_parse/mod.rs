@@ -68,9 +68,9 @@ where
                 break;
             }
 
-            let ir_id = ir::Id::entry(unit_id, entry_id);
             let die_extra = DIEItemsExtra {
-                ir_id,
+                entry_id,
+                unit_id,
                 addr_size,
                 dwarf_version,
                 debug_str: &debug_str,
