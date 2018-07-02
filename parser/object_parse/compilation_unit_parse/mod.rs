@@ -16,10 +16,6 @@ where
     pub rnglists: &'input gimli::RangeLists<R>,
 }
 
-// DEVELOPMENT NOTE: This will be signature for this struct.
-// pub struct CompUnitEdgesExtra<'input, R>
-// where
-//     R: 'input + gimli::Reader,
 pub struct CompUnitEdgesExtra<R>
 where
     R: gimli::Reader,
