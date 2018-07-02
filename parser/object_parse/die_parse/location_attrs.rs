@@ -16,7 +16,6 @@ use super::FallilbleOption;
 pub struct DieLocationAttributes<R: gimli::Reader> {
     dw_at_low_pc: Option<gimli::AttributeValue<R>>,
     dw_at_high_pc: Option<gimli::AttributeValue<R>>,
-    dw_at_entry_pc: Option<gimli::AttributeValue<R>>,
     dw_at_ranges: Option<gimli::AttributeValue<R>>,
 }
 
@@ -31,7 +30,6 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
         Ok(Self {
             dw_at_low_pc: die.attr_value(gimli::DW_AT_low_pc)?,
             dw_at_high_pc: die.attr_value(gimli::DW_AT_high_pc)?,
-            dw_at_entry_pc: die.attr_value(gimli::DW_AT_entry_pc)?,
             dw_at_ranges: die.attr_value(gimli::DW_AT_ranges)?,
         })
     }
@@ -87,8 +85,6 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
         // or the `DW_AT_entry_pc` attribute for noncontiguous entities.
         let base_addr: u64 = if let Some(addr) = self.dw_at_low_pc()? {
             addr
-        } else if let Some(addr) = self.dw_at_entry_pc()? {
-            addr
         } else {
             // If neither exists, this DIE does not represent a definition.
             return Ok(None);
@@ -108,17 +104,6 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     /// Return the DW_AT_low_pc attribute as a u64 value representing an address.
     fn dw_at_low_pc(&self) -> FallilbleOption<u64> {
         match &self.dw_at_low_pc {
-            Some(gimli::AttributeValue::Addr(address)) => Ok(Some(*address)),
-            Some(_) => Err(traits::Error::with_msg(
-                "Unexpected base address attribute value",
-            )),
-            None => Ok(None),
-        }
-    }
-
-    /// Return the DW_AT_entry_pc attribute as a u64 value representing an address.
-    fn dw_at_entry_pc(&self) -> FallilbleOption<u64> {
-        match &self.dw_at_entry_pc {
             Some(gimli::AttributeValue::Addr(address)) => Ok(Some(*address)),
             Some(_) => Err(traits::Error::with_msg(
                 "Unexpected base address attribute value",
