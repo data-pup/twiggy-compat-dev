@@ -62,22 +62,12 @@ where
             // returning an Option for now so I can develop incrementally.
             let new_ir_item: Option<ir::Item> = match kind {
                 ir::ItemKind::Code(_) => None,
-                ir::ItemKind::Data(_) => {
-                    // let ir_name = name_attr.unwrap_or("DATA".to_string());
-                    // let ir_size = 1; // FIXUP: Add logic for this.
-                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
-                    None
-                }
+                ir::ItemKind::Data(_) => None,
                 ir::ItemKind::Debug(_) => None,
                 ir::ItemKind::Misc(_) => None,
-                ir::ItemKind::Scope(_) => {
-                    // let ir_name = name_attr.unwrap_or("SCOPE".to_string());
-                    // let ir_size = 3; // FIXUP: Add logic for this.
-                    // Some(ir::Item::new(ir_id, ir_name, ir_size, kind))
-                    None
-                }
+                ir::ItemKind::Scope(_) => None,
                 ir::ItemKind::Subroutine(_) => {
-                    let ir_name = name_attr.unwrap_or("SUBROUTINE".to_string());
+                    let ir_name = name_attr.unwrap_or("Subroutine".to_string());
                     if let Some(ir_size) =
                         location_attrs.entity_size(addr_size, dwarf_version, rnglists)?
                     {

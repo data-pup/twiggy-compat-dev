@@ -23,7 +23,7 @@ impl<R: gimli::Reader> DieLocationAttributes<R> {
     /// Try to create a new location attributes instance using the given
     /// debugging information entry (DIE). Reading these attributes may fail,
     /// so this will return a Result rather than a plain `Self`.
-    /// FIXUP: Is using the TryFrom trait acceptable?
+    /// TODO: Use the TryFrom trait once it is stable.
     pub fn try_from(
         die: &gimli::DebuggingInformationEntry<R, R::Offset>,
     ) -> Result<Self, traits::Error> {

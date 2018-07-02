@@ -86,13 +86,6 @@ where
         gimli::DW_TAG_friend => unimplemented!(),
         // Data member entries. (Section 5.7.6)
         gimli::DW_TAG_member => None,
-        // Class variable entries. (Section 5.7.7)
-        // FIXUP: This also seems to use `DW_TAG_variable`?
-        // Member function entries. (Section 5.7.8)
-        // FIXUP: This also seems to use `DW_TAG_subprogram`?
-        // Class template instantiations. (Section 5.7.9)
-        // FIXUP: This also uses `DW_TAG_class_type` `DW_TAG_structure_type`
-        // and `DW_TAG_union_type`?
         // Variant entries. (Section 5.7.10)
         gimli::DW_TAG_variant => None,
         gimli::DW_TAG_variant_part => None,
@@ -132,7 +125,7 @@ where
         gimli::DW_TAG_template_value_parameter => unimplemented!(),
         gimli::DW_TAG_thrown_type => unimplemented!(),
         gimli::DW_TAG_try_block => unimplemented!(),
-        // Default case.   (FIXUP: Should this return a `ItemKind::Misc`?)
+        // Default case.
         gimli::DwTag(_) => None,
     };
 
