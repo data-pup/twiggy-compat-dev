@@ -97,8 +97,7 @@ where
         _items: &mut ir::ItemsBuilder,
         _extra: Self::EdgesExtra,
     ) -> Result<(), traits::Error> {
-        // FIXUP: Identify whether this item should be considered an edge.
-        // NOTE: Currently no edges are created.
+        // TODO: Add edges representing the call graph.
         Ok(())
     }
 }
