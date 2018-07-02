@@ -24,7 +24,7 @@ where
         | gimli::DW_TAG_partial_unit
         | gimli::DW_TAG_imported_unit
         | gimli::DW_TAG_type_unit
-        | gimli::DW_TAG_skeleton_unit => unimplemented!(),
+        | gimli::DW_TAG_skeleton_unit => None,
         // Module, namespace, and imported entries. (Section 3.2)
         gimli::DW_TAG_module | gimli::DW_TAG_namespace => None,
         gimli::DW_TAG_imported_module | gimli::DW_TAG_imported_declaration => unimplemented!(),
